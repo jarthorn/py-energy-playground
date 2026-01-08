@@ -4,6 +4,7 @@ Reads stored data from disk, runs analysis, and prints results.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Dict, Iterable, Tuple, Any
 
@@ -50,3 +51,31 @@ class ReportRunner:
             title="Peak month for generation (TWh)",
             value_label="Peak Value (TWh)",
         )
+
+
+def main(entity_code: str) -> None:
+    """
+    Main entrypoint for report.py.
+
+    Args:
+        entity_code: Country code (e.g., "CAN", "ESP")
+    """
+    project_root = Path(__file__).parent.parent
+    data_path = project_root / "data" / f"{entity_code.lower()}-monthly-generation.json"
+
+    if not data_path.exists():
+        print(f"Error: Data file not found: {data_path}")
+        print(f"Please run the load program first to fetch data for {entity_code}:")
+        print(f"  uv run src/load.py {entity_code}")
+        sys.exit(1)
+
+    reporter = ReportRunner(data_path)
+    reporter.run()
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        entity_code = sys.argv[1]
+    else:
+        entity_code = "CAN"
+    main(entity_code)
