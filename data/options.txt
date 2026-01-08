@@ -1,0 +1,19 @@
+series
+        "Bioenergy",
+        "Clean",
+        "Coal",
+        "Demand",
+        "Fossil",
+        "Gas",
+        "Hydro",
+        "Hydro, bioenergy and other renewables",
+        "Net imports",
+        "Nuclear",
+        "Other fossil",
+        "Other renewables",
+        "Renewables",
+        "Solar",
+        "Total generation",
+        "Wind",
+        "Wind and solar"
+
