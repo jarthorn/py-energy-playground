@@ -38,6 +38,7 @@ class Load:
             f"{self.base_url}/v1/electricity-generation/monthly"
             + f"?entity_code={self.entity_code}"
             + f"&is_aggregate_series={'true' if self.is_aggregate_series else 'false'}"
+            + "&is_aggregate_entity=false"
             + f"&start_date={self.start_date}"
             + f"&api_key={self.api_key}"
         )

@@ -6,9 +6,10 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Iterable, Tuple, Any
+from typing import Dict, Iterable
 
 from analysis import ElectricityStats
+from models import GenerationRecord
 
 
 class ReportRunner:
@@ -17,20 +18,24 @@ class ReportRunner:
     def __init__(self, input_path: Path) -> None:
         self.input_path = Path(input_path)
 
-    def _load_records(self) -> Iterable[Dict[str, Any]]:
+    def _load_records(self) -> Iterable[GenerationRecord]:
         with self.input_path.open("r") as f:
             content = json.load(f)
-        return content.get("data", [])
+        data_list = content.get("data", [])
+        return [GenerationRecord.from_dict(record_dict) for record_dict in data_list]
 
     @staticmethod
-    def _print_peak_table(peak_months: Dict[str, Tuple[str, float]], title: str, value_label: str) -> None:
+    def _print_peak_table(peak_months: Dict[str, GenerationRecord], title: str, value_label: str, metric_attr: str) -> None:
         print("\n" + "=" * 70)
         print(title)
         print("=" * 70)
-        print(f"{'Series':<45} | {'Month':<12} | {value_label:>16}")
+        print(f"{'Fuel Type':<45} | {'Month':<12} | {value_label:>16}")
         print("-" * 70)
-        for series, (month, value) in sorted(peak_months.items()):
-            print(f"{series:<45} | {month:<12} | {value:>15.2f}")
+        for fuel_type, record in sorted(peak_months.items()):
+            value = getattr(record, metric_attr, None)
+            if value is not None:
+                date_str = record.date.isoformat()
+                print(f"{fuel_type:<45} | {date_str:<12} | {value:>15.2f}")
 
     def run(self) -> None:
         records = self._load_records()
@@ -42,6 +47,7 @@ class ReportRunner:
             peak_share,
             title="Peak month for share of generation (%)",
             value_label="Peak Value (%)",
+            metric_attr="share_of_generation_pct",
         )
 
         # Peak generation in TWh
@@ -50,6 +56,7 @@ class ReportRunner:
             peak_gen,
             title="Peak month for generation (TWh)",
             value_label="Peak Value (TWh)",
+            metric_attr="generation_twh",
         )
 
 
