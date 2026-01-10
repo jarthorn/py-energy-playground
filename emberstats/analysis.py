@@ -33,7 +33,7 @@ class ElectricityStats:
         peak_by_series: Dict[str, GenerationRecord] = {}
 
         for record in self.records:
-            if not record.fuel_type or not record.date:
+            if not record.fuel_type:
                 continue
 
             value = getattr(record, metric_attr, None)

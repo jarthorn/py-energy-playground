@@ -8,3 +8,23 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# W291: trailing whitespace
+# W293: blank line contains whitespace
+select = [
+    "W",   # pycodestyle warnings (includes W291, W293 for trailing whitespace)
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+]
+# Don't ignore trailing whitespace - we want to catch these!
+ignore = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.11",
+]

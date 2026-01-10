@@ -28,7 +28,22 @@ class ReportRunner:
         with self.input_path.open("r") as f:
             content = json.load(f)
         data_list = content.get("data", [])
-        return [GenerationRecord.from_dict(record_dict) for record_dict in data_list]
+
+        # Load all records first (date parsing happens in GenerationRecord.from_dict)
+        records = [GenerationRecord.from_dict(record_dict) for record_dict in data_list]
+
+        # Find the latest date from loaded records
+        max_date = None
+        for record in records:
+            if max_date is None or record.date > max_date:
+                max_date = record.date
+
+        # Update records that match the latest date
+        for record in records:
+            if record.date == max_date:
+                record.is_latest_month = True
+
+        return records
 
     @staticmethod
     def _print_peak_table(peak_months: Dict[str, GenerationRecord], title: str, value_label: str, metric_attr: str) -> None:
@@ -41,6 +56,8 @@ class ReportRunner:
             value = getattr(record, metric_attr, None)
             if value is not None:
                 date_str = record.date.isoformat()
+                if record.is_latest_month:
+                    date_str += "*"
                 print(f"{fuel_type:<45} | {date_str:<12} | {value:>15.2f}")
 
     def run(self) -> None:
