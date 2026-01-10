@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 
 import requests
 
+from .country_codes import CountryCode
+
 
 class Load:
     """
@@ -21,14 +23,18 @@ class Load:
 
     def __init__(
         self,
-        country_code: str = "CAN",
+        country_code: CountryCode | str = CountryCode.CAN,
         start_date: str = "2000-01",
         base_url: str = "https://api.ember-energy.org",
         is_aggregate_series: bool = False,
     ) -> None:
         load_dotenv()
         self.api_key = os.getenv("EMBER_API_KEY")
-        self.country_code = country_code
+        # Convert string to CountryCode if needed, for validation
+        if isinstance(country_code, str):
+            self.country_code = CountryCode(country_code.upper())
+        else:
+            self.country_code = country_code
         self.start_date = start_date
         self.base_url = base_url
         self.is_aggregate_series = is_aggregate_series
@@ -63,13 +69,13 @@ class Load:
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        country_code = sys.argv[1]
+        country_code = CountryCode(sys.argv[1].upper())
     else:
-        country_code = "CAN"
+        country_code = CountryCode.CAN
     load = Load(
         country_code=country_code,
         start_date="2000-01",
         is_aggregate_series=False,
     )
-    load.fetch_and_store(Path(f"data/{country_code.lower()}-monthly-generation.json"))
+    load.fetch_and_store(Path(f"data/{country_code.value.lower()}-monthly-generation.json"))
 

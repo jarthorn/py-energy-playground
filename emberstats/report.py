@@ -9,14 +9,19 @@ from pathlib import Path
 from typing import Dict, Iterable
 
 from .analysis import ElectricityStats
+from .country_codes import CountryCode
 from .models import GenerationRecord
 
 
 class ReportRunner:
     """Loads records from a file, runs analyses, and prints to stdout."""
 
-    def __init__(self, input_path: Path, country_code: str) -> None:
-        self.country_code = country_code
+    def __init__(self, input_path: Path, country_code: CountryCode | str) -> None:
+        # Convert string to CountryCode if needed
+        if isinstance(country_code, str):
+            self.country_code = CountryCode(country_code.upper())
+        else:
+            self.country_code = country_code
         self.input_path = Path(input_path)
 
     def _load_records(self) -> Iterable[GenerationRecord]:
@@ -46,7 +51,7 @@ class ReportRunner:
         peak_share = stats.peak_months_by_series("share_of_generation_pct")
         self._print_peak_table(
             peak_share,
-            title=f"Peak month for share of generation in {self.country_code} (%)",
+            title=f"Peak month for share of generation in {self.country_code.value} (%)",
             value_label="Peak Value (%)",
             metric_attr="share_of_generation_pct",
         )
@@ -55,26 +60,34 @@ class ReportRunner:
         peak_gen = stats.peak_months_by_series("generation_twh")
         self._print_peak_table(
             peak_gen,
-            title=f"Peak month for generation in {self.country_code} (TWh)",
+            title=f"Peak month for generation in {self.country_code.value} (TWh)",
             value_label="Peak Value (TWh)",
             metric_attr="generation_twh",
         )
 
 
-def main(country_code: str) -> None:
+def main(country_code: CountryCode | str) -> None:
     """
     Main entrypoint for report.py.
 
     Args:
-        country_code: Country code (e.g., "CAN", "ESP")
+        country_code: Country code (CountryCode enum or string that will be validated)
     """
+    # Convert string to CountryCode if needed
+    if isinstance(country_code, str):
+        try:
+            country_code = CountryCode(country_code.upper())
+        except ValueError:
+            print(f"Error: Invalid country code '{country_code}'. Please use a valid ISO 3166-1 alpha-3 code.")
+            sys.exit(1)
+
     project_root = Path(__file__).parent.parent
-    data_path = project_root / "data" / f"{country_code.lower()}-monthly-generation.json"
+    data_path = project_root / "data" / f"{country_code.value.lower()}-monthly-generation.json"
 
     if not data_path.exists():
         print(f"Error: Data file not found: {data_path}")
-        print(f"Please run the load program first to fetch data for {country_code}:")
-        print(f"  uv run python -m emberstats.load {country_code}")
+        print(f"Please run the load program first to fetch data for {country_code.value}:")
+        print(f"  uv run python -m emberstats.load {country_code.value}")
         sys.exit(1)
 
     reporter = ReportRunner(data_path, country_code)
@@ -83,7 +96,11 @@ def main(country_code: str) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        country_code = sys.argv[1]
+        try:
+            country_code = CountryCode(sys.argv[1].upper())
+        except ValueError:
+            print(f"Error: Invalid country code '{sys.argv[1]}'. Please use a valid ISO 3166-1 alpha-3 code.")
+            sys.exit(1)
     else:
-        country_code = "CAN"
+        country_code = CountryCode.CAN
     main(country_code)
