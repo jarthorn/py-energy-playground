@@ -21,14 +21,14 @@ class Load:
 
     def __init__(
         self,
-        entity_code: str = "CAN",
+        country_code: str = "CAN",
         start_date: str = "2000-01",
         base_url: str = "https://api.ember-energy.org",
         is_aggregate_series: bool = False,
     ) -> None:
         load_dotenv()
         self.api_key = os.getenv("EMBER_API_KEY")
-        self.entity_code = entity_code
+        self.country_code = country_code
         self.start_date = start_date
         self.base_url = base_url
         self.is_aggregate_series = is_aggregate_series
@@ -36,7 +36,7 @@ class Load:
     def _build_url(self) -> str:
         return (
             f"{self.base_url}/v1/electricity-generation/monthly"
-            + f"?entity_code={self.entity_code}"
+            + f"?entity_code={self.country_code}"
             + f"&is_aggregate_series={'true' if self.is_aggregate_series else 'false'}"
             + "&is_aggregate_entity=false"
             + f"&start_date={self.start_date}"
@@ -63,13 +63,13 @@ class Load:
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        entity_code = sys.argv[1]
+        country_code = sys.argv[1]
     else:
-        entity_code = "CAN"
+        country_code = "CAN"
     load = Load(
-        entity_code=entity_code,
+        country_code=country_code,
         start_date="2000-01",
         is_aggregate_series=False,
     )
-    load.fetch_and_store(Path(f"data/{entity_code.lower()}-monthly-generation.json"))
+    load.fetch_and_store(Path(f"data/{country_code.lower()}-monthly-generation.json"))
 
