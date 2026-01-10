@@ -8,8 +8,8 @@ import sys
 from pathlib import Path
 from typing import Dict, Iterable
 
-from analysis import ElectricityStats
-from models import GenerationRecord
+from .analysis import ElectricityStats
+from .models import GenerationRecord
 
 
 class ReportRunner:
@@ -73,7 +73,7 @@ def main(entity_code: str) -> None:
     if not data_path.exists():
         print(f"Error: Data file not found: {data_path}")
         print(f"Please run the load program first to fetch data for {entity_code}:")
-        print(f"  uv run src/load.py {entity_code}")
+        print(f"  uv run emberstats/load.py {entity_code}")
         sys.exit(1)
 
     reporter = ReportRunner(data_path)

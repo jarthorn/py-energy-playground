@@ -7,7 +7,7 @@ fetching or presentation concerns.
 from __future__ import annotations
 from typing import Dict, Iterable
 
-from models import GenerationRecord
+from .models import GenerationRecord
 
 
 class ElectricityStats:

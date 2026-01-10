@@ -7,12 +7,12 @@ from pathlib import Path
 import json
 import sys
 
-# Add src directory to path so we can import analysis
+# Add project root to path so we can import emberstats as a package
 project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root / "src"))
+sys.path.insert(0, str(project_root))
 
-from analysis import ElectricityStats
-from models import GenerationRecord
+from emberstats.analysis import ElectricityStats
+from emberstats.models import GenerationRecord
 
 
 def load_sample_records():

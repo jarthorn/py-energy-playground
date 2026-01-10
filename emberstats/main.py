@@ -4,8 +4,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from load import Load
-from report import ReportRunner
+from .load import Load
+from .report import ReportRunner
 
 
 def main(entity_code: str):
