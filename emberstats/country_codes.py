@@ -19,7 +19,7 @@ class CountryCode(StrEnum):
         >>> CountryCode("CAN")  # CountryCode.CAN
         >>> str(code)  # "CAN"
     """
-    
+
     # All supported country codes
     ARG = "ARG"  # Argentina
     ARM = "ARM"  # Armenia
