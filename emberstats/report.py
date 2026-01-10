@@ -1,6 +1,7 @@
 """
 Reads stored data from disk, runs analysis, and prints results.
 """
+
 from __future__ import annotations
 
 import json
@@ -46,7 +47,9 @@ class ReportRunner:
         return records
 
     @staticmethod
-    def _print_peak_table(peak_months: Dict[str, GenerationRecord], title: str, value_label: str, metric_attr: str) -> None:
+    def _print_peak_table(
+        peak_months: Dict[str, GenerationRecord], title: str, value_label: str, metric_attr: str
+    ) -> None:
         print("\n" + "=" * 70)
         print(title)
         print("=" * 70)

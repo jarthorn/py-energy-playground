@@ -1,18 +1,19 @@
 """
 Country code constants for the Ember API.
 """
+
 from enum import StrEnum
 
 
 class CountryCode(StrEnum):
     """
     ISO 3166-1 alpha-3 country codes supported by the Ember API.
-    
+
     StrEnum automatically inherits from both str and Enum, providing:
     - Type safety and validation
     - Direct string behavior (no need for .value)
     - IDE autocomplete support
-    
+
     Usage:
         >>> code = CountryCode.CAN
         >>> print(code)  # "CAN" (works as string directly)

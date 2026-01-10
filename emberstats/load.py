@@ -1,6 +1,7 @@
 """
 Responsible for fetching fresh data from the Ember API and storing it to disk.
 """
+
 from __future__ import annotations
 
 import json
@@ -67,6 +68,7 @@ class Load:
         data = self.fetch()
         return self.store(data, output_path)
 
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         country_code = CountryCode(sys.argv[1].upper())
@@ -78,4 +80,3 @@ if __name__ == "__main__":
         is_aggregate_series=False,
     )
     load.fetch_and_store(Path(f"data/{country_code.value.lower()}-monthly-generation.json"))
-

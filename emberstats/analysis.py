@@ -4,6 +4,7 @@ Analysis utilities for electricity generation data.
 These helpers operate on already-loaded API responses and do not handle
 fetching or presentation concerns.
 """
+
 from __future__ import annotations
 from typing import Dict, Iterable
 

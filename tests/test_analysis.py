@@ -1,6 +1,9 @@
 """
 Unit tests for ElectricityStats using the bundled Canada sample dataset.
 """
+
+from emberstats.analysis import ElectricityStats
+from emberstats.models import GenerationRecord
 import unittest
 from datetime import date
 from pathlib import Path
@@ -11,8 +14,6 @@ import sys
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from emberstats.analysis import ElectricityStats
-from emberstats.models import GenerationRecord
 
 
 def load_sample_records():
