@@ -64,15 +64,6 @@ class GlobalReport:
     def _find_new_records(
         self, metric_attr: str
     ) -> Dict[str, list[NewRecord]]:
-        """
-        Find countries that set new records in the latest month, grouped by fuel_type.
-
-        Args:
-            metric_attr: The metric to analyze ('share_of_generation_pct' or 'generation_twh')
-
-        Returns:
-            Dictionary mapping fuel_type -> list of NewRecord objects
-        """
         new_records_by_fuel: Dict[str, list[NewRecord]] = defaultdict(list)
         country_files = self._find_country_files()
 
@@ -102,12 +93,9 @@ class GlobalReport:
 
         return dict(new_records_by_fuel)
 
-    def _print_new_records_table_csv(
+    def _print_new_records(
         self, new_records_by_fuel: Dict[str, list[NewRecord]], title: str, value_label: str
     ) -> None:
-        print(f"\n{title}")
-
-
         if not new_records_by_fuel:
             print("No new records set in the latest month.")
             return
@@ -119,6 +107,17 @@ class GlobalReport:
 
         # Sort by fuel type
         all_records.sort(key=lambda x: x.fuel_type)
+
+        if self.output_csv:
+            self._print_new_records_csv(all_records, title, value_label)
+        else:
+            self._print_new_records_table(all_records, title, value_label)
+
+    def _print_new_records_csv(
+        self, all_records: list[NewRecord], title: str, value_label: str
+    ) -> None:
+        """Print new records in CSV format."""
+        print(f"\n{title}")
 
         # Output CSV
         output = StringIO()
@@ -139,23 +138,12 @@ class GlobalReport:
         print(output.getvalue())
 
     def _print_new_records_table(
-        self, new_records_by_fuel: Dict[str, list[NewRecord]], title: str, value_label: str
+        self, all_records: list[NewRecord], title: str, value_label: str
     ) -> None:
         """Print a table of new records in a formatted table suitable for command line viewing."""
         print("\n" + "=" * 90)
         print(title)
         print("=" * 90)
-
-        if not new_records_by_fuel:
-            print("No new records set in the latest month.")
-            return
-
-        # Flatten all records and sort by fuel type
-        all_records = []
-        for fuel_type, records in new_records_by_fuel.items():
-            all_records.extend(records)
-
-        all_records.sort(key=lambda x: x.fuel_type)
 
         print(f"{'Fuel Type':<20} | {'Country':<15} | {'Date':<12} | {'New Record':>15} | {'Previous Peak':>15}")
         print("-" * 90)
@@ -169,33 +157,19 @@ class GlobalReport:
         """Generate and print the global report."""
         # Find new records for share of generation
         new_share_records = self._find_new_records("share_of_generation_pct")
-        if self.output_csv:
-            self._print_new_records_table_csv(
-                new_share_records,
-                title="Countries Setting New Peak Share of Generation Records (Latest Month)",
-                value_label="Share (%)",
-            )
-        else:
-            self._print_new_records_table(
-                new_share_records,
-                title="Countries Setting New Peak Share of Generation Records (Latest Month)",
-                value_label="Share (%)",
-            )
+        self._print_new_records(
+            new_share_records,
+            title="Countries Setting New Peak Share of Generation Records (Latest Month)",
+            value_label="Share (%)",
+        )
 
         # Find new records for absolute generation
         new_gen_records = self._find_new_records("generation_twh")
-        if self.output_csv:
-            self._print_new_records_table_csv(
-                new_gen_records,
-                title="Countries Setting New Peak Generation Records (Latest Month)",
-                value_label="Generation (TWh)",
-            )
-        else:
-            self._print_new_records_table(
-                new_gen_records,
-                title="Countries Setting New Peak Generation Records (Latest Month)",
-                value_label="Generation (TWh)",
-            )
+        self._print_new_records(
+            new_gen_records,
+            title="Countries Setting New Peak Generation Records (Latest Month)",
+            value_label="Generation (TWh)",
+        )
 
 
 def main(output_csv: bool = False) -> None:
