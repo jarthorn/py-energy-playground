@@ -14,7 +14,7 @@ from .country_codes import CountryCode
 from .models import GenerationRecord
 
 
-class ReportRunner:
+class CountryReport:
     """Loads records from a file, runs analyses, and prints to stdout."""
 
     def __init__(self, input_path: Path, country_code: CountryCode | str) -> None:
@@ -88,7 +88,7 @@ class ReportRunner:
 
 def main(country_code: CountryCode | str) -> None:
     """
-    Main entrypoint for report.py.
+    Main entrypoint for country_report.py.
 
     Args:
         country_code: Country code (CountryCode enum or string that will be validated)
@@ -110,7 +110,7 @@ def main(country_code: CountryCode | str) -> None:
         print(f"  uv run python -m emberstats.load {country_code.value}")
         sys.exit(1)
 
-    reporter = ReportRunner(data_path, country_code)
+    reporter = CountryReport(data_path, country_code)
     reporter.run()
 
 

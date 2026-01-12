@@ -3,8 +3,8 @@ from pathlib import Path
 
 
 from .country_codes import CountryCode
+from .country_report import CountryReport
 from .load import Load
-from .report import ReportRunner
 
 
 def main(country_code: CountryCode | str):
@@ -31,7 +31,7 @@ def main(country_code: CountryCode | str):
     loader.fetch_and_store(data_path)
 
     # Read stored data, run analysis, and print to stdout
-    reporter = ReportRunner(data_path, country_code)
+    reporter = CountryReport(data_path, country_code)
     reporter.run()
 
 

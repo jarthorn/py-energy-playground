@@ -91,7 +91,7 @@ def fetch_and_store_all(start_date: str = "2000-01", is_aggregate_series: bool =
             print(f"✓ Successfully loaded data for {country_code.value}")
         except Exception as e:
             print(f"✗ Failed to load data for {country_code.value}: {e}")
-    print(f"\nCompleted loading data for all countries.")
+    print("\nCompleted loading data for all countries.")
 
 
 if __name__ == "__main__":
@@ -104,8 +104,8 @@ if __name__ == "__main__":
                 country_code = CountryCode(arg)
             except ValueError:
                 print(f"Error: Invalid country code '{sys.argv[1]}'.")
-                print(f"Please use a valid ISO 3166-1 alpha-3 country code (e.g., CAN, USA, ESP).")
-                print(f"Use 'ALL' to load data for all countries.")
+                print("Please use a valid ISO 3166-1 alpha-3 country code (e.g., CAN, USA, ESP).")
+                print("Use 'ALL' to load data for all countries.")
                 sys.exit(1)
             load = Load(
                 country_code=country_code,
