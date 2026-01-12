@@ -69,14 +69,55 @@ class Load:
         return self.store(data, output_path)
 
 
+def fetch_and_store_all(start_date: str = "2000-01", is_aggregate_series: bool = False) -> None:
+    """
+    Fetch and store data for all country codes.
+
+    Args:
+        start_date: Start date for the data query (default: "2000-01")
+        is_aggregate_series: Whether to include aggregate series (default: False)
+    """
+    print(f"Loading data for all {len(CountryCode)} countries...")
+    for country_code in CountryCode:
+        print(f"\nProcessing {country_code.value}...")
+        try:
+            load = Load(
+                country_code=country_code,
+                start_date=start_date,
+                is_aggregate_series=is_aggregate_series,
+            )
+            output_path = Path(f"data/{country_code.value.lower()}-monthly-generation.json")
+            load.fetch_and_store(output_path)
+            print(f"✓ Successfully loaded data for {country_code.value}")
+        except Exception as e:
+            print(f"✗ Failed to load data for {country_code.value}: {e}")
+    print(f"\nCompleted loading data for all countries.")
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        country_code = CountryCode(sys.argv[1].upper())
+        arg = sys.argv[1].upper()
+        if arg == "ALL":
+            fetch_and_store_all()
+        else:
+            try:
+                country_code = CountryCode(arg)
+            except ValueError:
+                print(f"Error: Invalid country code '{sys.argv[1]}'.")
+                print(f"Please use a valid ISO 3166-1 alpha-3 country code (e.g., CAN, USA, ESP).")
+                print(f"Use 'ALL' to load data for all countries.")
+                sys.exit(1)
+            load = Load(
+                country_code=country_code,
+                start_date="2000-01",
+                is_aggregate_series=False,
+            )
+            load.fetch_and_store(Path(f"data/{country_code.value.lower()}-monthly-generation.json"))
     else:
         country_code = CountryCode.CAN
-    load = Load(
-        country_code=country_code,
-        start_date="2000-01",
-        is_aggregate_series=False,
-    )
-    load.fetch_and_store(Path(f"data/{country_code.value.lower()}-monthly-generation.json"))
+        load = Load(
+            country_code=country_code,
+            start_date="2000-01",
+            is_aggregate_series=False,
+        )
+        load.fetch_and_store(Path(f"data/{country_code.value.lower()}-monthly-generation.json"))
