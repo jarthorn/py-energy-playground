@@ -85,22 +85,7 @@ class CountryReport:
             metric_attr="generation_twh",
         )
 
-
-def main(country_code: CountryCode | str) -> None:
-    """
-    Main entrypoint for country_report.py.
-
-    Args:
-        country_code: Country code (CountryCode enum or string that will be validated)
-    """
-    # Convert string to CountryCode if needed
-    if isinstance(country_code, str):
-        try:
-            country_code = CountryCode(country_code.upper())
-        except ValueError:
-            print(f"Error: Invalid country code '{country_code}'. Please use a valid ISO 3166-1 alpha-3 code.")
-            sys.exit(1)
-
+def main(country_code: CountryCode) -> None:
     project_root = Path(__file__).parent.parent
     data_path = project_root / "data" / f"{country_code.value.lower()}-monthly-generation.json"
 
@@ -112,7 +97,6 @@ def main(country_code: CountryCode | str) -> None:
 
     reporter = CountryReport(data_path, country_code)
     reporter.run()
-
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
