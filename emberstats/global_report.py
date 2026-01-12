@@ -4,10 +4,12 @@ Global report analyzing all loaded country data to find new records set in the l
 
 from __future__ import annotations
 
+import csv
 import json
 import sys
 from collections import defaultdict
 from datetime import date
+from io import StringIO
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -19,8 +21,9 @@ from .models import GenerationRecord
 class GlobalReport:
     """Analyzes all loaded country data to find new records set in the latest month."""
 
-    def __init__(self, data_dir: Path) -> None:
+    def __init__(self, data_dir: Path, output_csv: bool = False) -> None:
         self.data_dir = Path(data_dir)
+        self.output_csv = output_csv
 
     def _find_country_files(self) -> list[tuple[CountryCode, Path]]:
         """Find all country data files and return tuples of (CountryCode, file_path)."""
@@ -99,10 +102,46 @@ class GlobalReport:
 
         return dict(new_records_by_fuel)
 
+    def _print_new_records_table_csv(
+        self, new_records_by_fuel: Dict[str, list[NewRecord]], title: str, value_label: str
+    ) -> None:
+        print(f"\n{title}")
+
+
+        if not new_records_by_fuel:
+            print("No new records set in the latest month.")
+            return
+
+        # Flatten all records into a single list
+        all_records = []
+        for fuel_type, records in new_records_by_fuel.items():
+            all_records.extend(records)
+
+        # Sort by fuel type
+        all_records.sort(key=lambda x: x.fuel_type)
+
+        # Output CSV
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Fuel Type", "Country", "Date", "New Record", "Previous Peak"])
+
+        for record in all_records:
+            writer.writerow(
+                [
+                    record.fuel_type,
+                    record.country_name,
+                    record.date,
+                    f"{record.value:.2f}",
+                    f"{record.previous_peak:.2f}",
+                ]
+            )
+
+        print(output.getvalue())
+
     def _print_new_records_table(
         self, new_records_by_fuel: Dict[str, list[NewRecord]], title: str, value_label: str
     ) -> None:
-        """Print a table of new records grouped by fuel type."""
+        """Print a table of new records in a formatted table suitable for command line viewing."""
         print("\n" + "=" * 90)
         print(title)
         print("=" * 90)
@@ -111,38 +150,61 @@ class GlobalReport:
             print("No new records set in the latest month.")
             return
 
-        for fuel_type in sorted(new_records_by_fuel.keys()):
-            records = new_records_by_fuel[fuel_type]
-            print(f"\n{fuel_type}:")
-            print(f"{'Country':<15} | {'Date':<12} | {'New Record':>15} | {'Previous Peak':>15}")
-            print("-" * 90)
-            for record in sorted(records, key=lambda x: x.value, reverse=True):
-                print(
-                    f"{record.country_code.value:<15} | {record.date:<12} | "
-                    f"{record.value:>15.2f} | {record.previous_peak:>15.2f}"
-                )
+        # Flatten all records and sort by fuel type
+        all_records = []
+        for fuel_type, records in new_records_by_fuel.items():
+            all_records.extend(records)
+
+        all_records.sort(key=lambda x: x.fuel_type)
+
+        print(f"{'Fuel Type':<20} | {'Country':<15} | {'Date':<12} | {'New Record':>15} | {'Previous Peak':>15}")
+        print("-" * 90)
+        for record in all_records:
+            print(
+                f"{record.fuel_type:<20} | {record.country_name:<15} | {record.date:<12} | "
+                f"{record.value:>15.2f} | {record.previous_peak:>15.2f}"
+            )
 
     def run(self) -> None:
         """Generate and print the global report."""
         # Find new records for share of generation
         new_share_records = self._find_new_records("share_of_generation_pct")
-        self._print_new_records_table(
-            new_share_records,
-            title="Countries Setting New Peak Share of Generation Records (Latest Month)",
-            value_label="Share (%)",
-        )
+        if self.output_csv:
+            self._print_new_records_table_csv(
+                new_share_records,
+                title="Countries Setting New Peak Share of Generation Records (Latest Month)",
+                value_label="Share (%)",
+            )
+        else:
+            self._print_new_records_table(
+                new_share_records,
+                title="Countries Setting New Peak Share of Generation Records (Latest Month)",
+                value_label="Share (%)",
+            )
 
         # Find new records for absolute generation
         new_gen_records = self._find_new_records("generation_twh")
-        self._print_new_records_table(
-            new_gen_records,
-            title="Countries Setting New Peak Generation Records (Latest Month)",
-            value_label="Generation (TWh)",
-        )
+        if self.output_csv:
+            self._print_new_records_table_csv(
+                new_gen_records,
+                title="Countries Setting New Peak Generation Records (Latest Month)",
+                value_label="Generation (TWh)",
+            )
+        else:
+            self._print_new_records_table(
+                new_gen_records,
+                title="Countries Setting New Peak Generation Records (Latest Month)",
+                value_label="Generation (TWh)",
+            )
 
 
-def main() -> None:
-    """Main entrypoint for global_report.py."""
+def main(output_csv: bool = False) -> None:
+    """
+    Main entrypoint for global_report.py.
+
+    Args:
+        output_csv: If True, output in CSV format; otherwise output formatted table
+    """
     project_root = Path(__file__).parent.parent
     data_dir = project_root / "data"
 
@@ -151,9 +213,10 @@ def main() -> None:
         print("Please run the load program first to fetch data for at least one country.")
         return
 
-    report = GlobalReport(data_dir)
+    report = GlobalReport(data_dir, output_csv=output_csv)
     report.run()
 
 
 if __name__ == "__main__":
-    main()
+    output_csv = "-csv" in sys.argv or "--csv" in sys.argv
+    main(output_csv=output_csv)
