@@ -94,7 +94,7 @@ class GlobalReport:
         return dict(new_records_by_fuel)
 
     def _print_new_records(
-        self, new_records_by_fuel: Dict[str, list[NewRecord]], title: str, value_label: str
+        self, new_records_by_fuel: Dict[str, list[NewRecord]], title: str, unit_label: str
     ) -> None:
         if not new_records_by_fuel:
             print("No new records set in the latest month.")
@@ -109,20 +109,20 @@ class GlobalReport:
         all_records.sort(key=lambda x: x.fuel_type)
 
         if self.output_csv:
-            self._print_new_records_csv(all_records, title, value_label)
+            self._print_new_records_csv(all_records, title, unit_label)
         else:
-            self._print_new_records_table(all_records, title, value_label)
+            self._print_new_records_table(all_records, title, unit_label)
 
     def _print_new_records_csv(
-        self, all_records: list[NewRecord], title: str, value_label: str
+        self, all_records: list[NewRecord], title: str, unit_label: str
     ) -> None:
         """Print new records in CSV format."""
-        print(f"\n{title}")
+        print(f"\n# {title}")
 
         # Output CSV
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow(["Fuel Type", "Country", "Date", "New Record", "Previous Peak"])
+        writer.writerow([f"Fuel Type", "Country", "Date", f"New Record {unit_label}", f"Previous Peak {unit_label}"])
 
         for record in all_records:
             writer.writerow(
@@ -138,19 +138,19 @@ class GlobalReport:
         print(output.getvalue())
 
     def _print_new_records_table(
-        self, all_records: list[NewRecord], title: str, value_label: str
+        self, all_records: list[NewRecord], title: str, unit_label: str
     ) -> None:
         """Print a table of new records in a formatted table suitable for command line viewing."""
-        print("\n" + "=" * 90)
+        print("\n" + "=" * 95)
         print(title)
-        print("=" * 90)
+        print("=" * 95)
 
-        print(f"{'Fuel Type':<20} | {'Country':<15} | {'Date':<12} | {'New Record':>15} | {'Previous Peak':>15}")
-        print("-" * 90)
+        print(f"{'Fuel Type':<20} | {'Country':<15} | {'Date':<12} | {f'New Record {unit_label}':>15} | {f'Previous Peak {unit_label}':>15}")
+        print("-" * 95)
         for record in all_records:
             print(
                 f"{record.fuel_type:<20} | {record.country_name:<15} | {record.date:<12} | "
-                f"{record.value:>15.2f} | {record.previous_peak:>15.2f}"
+                f"{record.value:>15.2f} | {record.previous_peak:>18.2f}"
             )
 
     def run(self) -> None:
@@ -160,7 +160,7 @@ class GlobalReport:
         self._print_new_records(
             new_share_records,
             title="Countries Setting New Peak Share of Generation Records (Latest Month)",
-            value_label="Share (%)",
+            unit_label="(%)",
         )
 
         # Find new records for absolute generation
@@ -168,7 +168,7 @@ class GlobalReport:
         self._print_new_records(
             new_gen_records,
             title="Countries Setting New Peak Generation Records (Latest Month)",
-            value_label="Generation (TWh)",
+            unit_label="(TWh)",
         )
 
 
