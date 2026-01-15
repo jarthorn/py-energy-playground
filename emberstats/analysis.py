@@ -170,8 +170,6 @@ class ElectricityStats:
         if latest_date is None:
             return (0.0, None)
 
-        # Calculate start date (11 months before latest date to get exactly 12 months total)
-        # Records are always on the first day of the month
         start_date = self._subtract_months(latest_date, 11)
 
         records_12_months = self._get_records_in_date_range(start_date, latest_date)
@@ -194,12 +192,8 @@ class ElectricityStats:
         if latest_date is None:
             return 0.0
 
-        # Previous 12 months: 12-24 months before latest date
-        # Calculate end date (11 months before latest, exclusive, to get exactly 12 months)
-        end_date = self._subtract_months(latest_date, 11)
-
-        # Calculate start date (23 months before latest to get exactly 12 months)
         start_date = self._subtract_months(latest_date, 23)
+        end_date = self._subtract_months(latest_date, 11)
 
         # Get records from start_date (inclusive) to end_date (exclusive)
         # Since records are on the 1st, we want end_date to be exclusive
