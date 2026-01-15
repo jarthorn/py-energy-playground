@@ -93,6 +93,128 @@ class GlobalReport:
 
         return dict(new_records_by_fuel)
 
+    def _compute_peak_year_histogram(self) -> Dict[str, Dict[int, int]]:
+        """
+        Compute histogram of peak years for share_of_generation_pct, grouped by fuel_type.
+
+        Returns:
+            Dictionary mapping fuel_type -> {year: count} where count is the number of countries
+            that reached their peak share_of_generation_pct for that fuel_type in that year.
+            Excludes "Other fossil", "Other renewables", and "Net imports".
+        """
+        EXCLUDED_FUEL_TYPES = {"Other fossil", "Other renewables", "Net imports"}
+        histogram: Dict[str, Dict[int, int]] = defaultdict(lambda: defaultdict(int))
+        country_files = self._find_country_files()
+
+        for country_code, file_path in country_files:
+            try:
+                records, _ = self._load_records(file_path)
+                if not records:
+                    continue
+
+                # Find peak months for each fuel type
+                stats = ElectricityStats(records)
+                peaks = stats.peak_months_by_series("share_of_generation_pct")
+
+                # Extract year from peak date for each fuel type
+                for fuel_type, peak_record in peaks.items():
+                    if fuel_type in EXCLUDED_FUEL_TYPES:
+                        continue
+                    peak_year = peak_record.date.year
+                    histogram[fuel_type][peak_year] += 1
+            except Exception as e:
+                # Skip countries that fail to load
+                print(f"Warning: Failed to process {country_code.value}: {e}", file=sys.stderr)
+                continue
+
+        return dict(histogram)
+
+    def _print_peak_year_histogram(
+        self, histogram: Dict[str, Dict[int, int]], title: str
+    ) -> None:
+        """Print histogram data showing peak years by fuel type."""
+        if not histogram:
+            print("No peak year data available.")
+            return
+
+        if self.output_csv:
+            self._print_peak_year_histogram_csv(histogram, title)
+        else:
+            self._print_peak_year_histogram_table(histogram, title)
+
+    def _print_peak_year_histogram_csv(
+        self, histogram: Dict[str, Dict[int, int]], title: str
+    ) -> None:
+        """Print peak year histogram in CSV format."""
+        print(f"\n# {title}")
+
+        if not histogram:
+            return
+
+        # Collect all years across all fuel types
+        all_years = set()
+        for fuel_type_data in histogram.values():
+            all_years.update(fuel_type_data.keys())
+        all_years = sorted(all_years)
+
+        # Get sorted fuel types
+        fuel_types = sorted(histogram.keys())
+
+        output = StringIO()
+        writer = csv.writer(output)
+        # Header: Year, then one column per fuel type
+        writer.writerow(["Year"] + fuel_types)
+
+        # One row per year
+        for year in all_years:
+            row = [year]
+            for fuel_type in fuel_types:
+                count = histogram[fuel_type].get(year, 0)
+                row.append(count)
+            writer.writerow(row)
+
+        print(output.getvalue())
+
+    def _print_peak_year_histogram_table(
+        self, histogram: Dict[str, Dict[int, int]], title: str
+    ) -> None:
+        """Print peak year histogram in formatted table format."""
+        print("\n" + "=" * 95)
+        print(title)
+        print("=" * 95)
+
+        if not histogram:
+            return
+
+        # Collect all years across all fuel types
+        all_years = set()
+        for fuel_type_data in histogram.values():
+            all_years.update(fuel_type_data.keys())
+        all_years = sorted(all_years)
+
+        # Get sorted fuel types
+        fuel_types = sorted(histogram.keys())
+
+        # Calculate column widths
+        year_width = 10
+        fuel_type_width = 15
+        total_width = year_width + 2 + len(fuel_types) * (fuel_type_width + 3) - 3
+
+        # Print header
+        header = f"{'Year':<{year_width}} |"
+        for fuel_type in fuel_types:
+            header += f" {fuel_type:<{fuel_type_width}} |"
+        print(header)
+        print("-" * total_width)
+
+        # Print rows
+        for year in all_years:
+            row = f"{year:<{year_width}} |"
+            for fuel_type in fuel_types:
+                count = histogram[fuel_type].get(year, 0)
+                row += f" {count:<{fuel_type_width}} |"
+            print(row)
+
     def _print_new_records(
         self, new_records_by_fuel: Dict[str, list[NewRecord]], title: str, unit_label: str
     ) -> None:
@@ -169,6 +291,13 @@ class GlobalReport:
             new_gen_records,
             title="Countries Setting New Peak Generation Records (Latest Month)",
             unit_label="(TWh)",
+        )
+
+        # Peak year histogram by fuel type
+        peak_year_histogram = self._compute_peak_year_histogram()
+        self._print_peak_year_histogram(
+            peak_year_histogram,
+            title="Peak Year Histogram: Countries Reaching Peak Share of Generation by Fuel Type",
         )
 
 
