@@ -18,7 +18,7 @@ sys.path.insert(0, str(project_root))
 
 def load_sample_records():
     """Load the sample Canada monthly generation data from the repo."""
-    sample_path = project_root / "data" / "canada-monthly-generation.json"
+    sample_path = project_root / "tests/data" / "canada-monthly-generation.json"
     with open(sample_path, "r") as f:
         content = json.load(f)
     data_list = content.get("data", [])
