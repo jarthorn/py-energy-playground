@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Optional
 
 from .analysis import ElectricityStats
 from .country_codes import CountryCode
@@ -47,6 +47,128 @@ class CountryReport:
         return records
 
     @staticmethod
+    def _calculate_global_rank(
+        country_code: CountryCode, total_twh: float, data_dir: Path
+    ) -> Optional[int]:
+        """
+        Calculate global rank for a country based on total generation in last 12 months.
+
+        Args:
+            country_code: Country code to rank
+            total_twh: Total TWh for the country in last 12 months
+            data_dir: Directory containing country data files
+
+        Returns:
+            Global rank (1-based) or None if insufficient data.
+        """
+        country_totals: list[tuple[CountryCode, float]] = []
+
+        # Load all country files and calculate totals
+        for file_path in data_dir.glob("*-monthly-generation.json"):
+            try:
+                country_code_str = file_path.stem.replace("-monthly-generation", "").upper()
+                file_country_code = CountryCode(country_code_str)
+
+                with file_path.open("r") as f:
+                    content = json.load(f)
+                data_list = content.get("data", [])
+                records = [
+                    GenerationRecord.from_dict(record_dict) for record_dict in data_list
+                ]
+
+                stats = ElectricityStats(records)
+                country_total, _ = stats.total_generation_last_12_months()
+                if country_total > 0:
+                    country_totals.append((file_country_code, country_total))
+            except Exception:
+                # Skip files that fail to load
+                continue
+
+        if not country_totals:
+            return None
+
+        # Sort by total descending
+        country_totals.sort(key=lambda x: x[1], reverse=True)
+
+        # Find rank
+        for rank, (code, total) in enumerate(country_totals, start=1):
+            if code == country_code:
+                return rank
+
+        return None
+
+    def _generate_opening_paragraph(self, stats: ElectricityStats) -> str:
+        """Generate the opening paragraph with country statistics."""
+        # Calculate statistics
+        total_twh, latest_date = stats.total_generation_last_12_months()
+        if latest_date is None:
+            return f"{self.country_code.value}: No data available."
+
+        # Get country name from first record if available
+        records_list = list(stats.records)
+        country_name = (
+            records_list[0].country if records_list else self.country_code.value
+        )
+
+        # Global rank
+        project_root = Path(__file__).parent.parent
+        data_dir = project_root / "data"
+        global_rank = self._calculate_global_rank(self.country_code, total_twh, data_dir)
+        rank_text = f"ranked {global_rank}" if global_rank else "not ranked"
+
+        # Growth rate
+        growth_rate = stats.growth_rate_total()
+        if growth_rate is not None:
+            if growth_rate >= 0:
+                change_text = f"increase of {growth_rate:.1f}%"
+            else:
+                change_text = f"decrease of {abs(growth_rate):.1f}%"
+        else:
+            change_text = "no change data available"
+
+        # Fuel types above 10%
+        major_fuel_types = stats.fuel_types_above_threshold(10.0)
+        if major_fuel_types:
+            # Format as comma-separated list with "and" before last item
+            if len(major_fuel_types) == 1:
+                fuel_types_text = major_fuel_types[0]
+            elif len(major_fuel_types) == 2:
+                fuel_types_text = f"{major_fuel_types[0]} and {major_fuel_types[1]}"
+            else:
+                fuel_types_text = (
+                    ", ".join(major_fuel_types[:-1]) + f", and {major_fuel_types[-1]}"
+                )
+        else:
+            fuel_types_text = "none (all below 10%)"
+
+        # Fastest growing
+        fastest_fuel_type, fastest_growth_rate = stats.fastest_growing_fuel_type()
+        if fastest_fuel_type:
+            fastest_text = f"{fastest_fuel_type} with a {fastest_growth_rate:.1f}%"
+        else:
+            fastest_text = "none (insufficient data)"
+
+        # Slowest growing
+        slowest_fuel_type, slowest_growth_rate = stats.fastest_shrinking_fuel_type()
+        if slowest_fuel_type:
+            slowest_text = f"{slowest_fuel_type} with a {slowest_growth_rate:.1f}%"
+        else:
+            slowest_text = "none (insufficient data)"
+
+        # Build paragraph
+        paragraph = (
+            f"{country_name} produced {total_twh:.1f} TWh of power in the last 12 months, "
+            f"meaning it is {rank_text} among major power producing countries. "
+            f"This is an {change_text} from the previous 12 month period. "
+            f"Its biggest sources of power are: {fuel_types_text}. "
+            f"Its fastest growing source of power is {fastest_text} growth rate. "
+            f"Its slowest growing source of power is {slowest_text} growth rate. "
+            f"The following tables show the peak share and absolute generation for each fuel type."
+        )
+
+        return paragraph
+
+    @staticmethod
     def _print_peak_table(
         peak_months: Dict[str, GenerationRecord], title: str, value_label: str, metric_attr: str
     ) -> None:
@@ -66,6 +188,11 @@ class CountryReport:
     def run(self) -> None:
         records = self._load_records()
         stats = ElectricityStats(records)
+
+        # Print opening paragraph
+        opening_paragraph = self._generate_opening_paragraph(stats)
+        print(opening_paragraph)
+        print()
 
         # Peak share of generation
         peak_share = stats.peak_months_by_series("share_of_generation_pct")

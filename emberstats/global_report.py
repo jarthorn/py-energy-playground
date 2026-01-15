@@ -244,7 +244,7 @@ class GlobalReport:
         # Output CSV
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow([f"Fuel Type", "Country", "Date", f"New Record {unit_label}", f"Previous Peak {unit_label}"])
+        writer.writerow(["Fuel Type", "Country", "Date", f"New Record {unit_label}", f"Previous Peak {unit_label}"])
 
         for record in all_records:
             writer.writerow(
@@ -267,7 +267,10 @@ class GlobalReport:
         print(title)
         print("=" * 95)
 
-        print(f"{'Fuel Type':<20} | {'Country':<15} | {'Date':<12} | {f'New Record {unit_label}':>15} | {f'Previous Peak {unit_label}':>15}")
+        print(
+            f"{'Fuel Type':<20} | {'Country':<15} | {'Date':<12} | "
+            f"{f'New Record {unit_label}':>15} | {f'Previous Peak {unit_label}':>15}"
+        )
         print("-" * 95)
         for record in all_records:
             print(
