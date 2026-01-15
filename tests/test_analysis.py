@@ -74,6 +74,19 @@ class TestElectricityStats(unittest.TestCase):
         self.assertEqual(coal_record.date, date(2020, 1, 1))
         self.assertEqual(coal_record.generation_twh, 3.67)
 
+    def test_total_generation_last_12_months(self):
+        """Test calculating total generation for the last 12 months."""
+        total_twh, latest_date = self.stats.total_generation_last_12_months()
+
+        self.assertIsNotNone(latest_date, "Latest date should not be None")
+        self.assertEqual(total_twh, 612.01, "Total generation should be 612 TWh")
+
+    def test_total_generation_previous_12_months(self):
+        """Test calculating total generation for the previous 12 months."""
+        total_twh = self.stats.total_generation_previous_12_months()
+
+        self.assertEqual(total_twh, 594.03, "Total generation should be 594.03 TWh")
+
 
 if __name__ == "__main__":
     unittest.main()
