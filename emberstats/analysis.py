@@ -25,7 +25,6 @@ class NewRecord:
     value: float
     previous_peak: float
 
-
 @dataclass
 class CurrentFuelData:
     """Statistics for a fuel type in the energy mix table."""
@@ -385,12 +384,24 @@ class ElectricityStats:
         for fuel_type in all_fuel_types:
             # Current Month Stats
             current_rec = latest_by_fuel.get(fuel_type)
-            gen_current = current_rec.generation_twh if current_rec and current_rec.generation_twh is not None else 0.0
-            share_current = current_rec.share_of_generation_pct if current_rec and current_rec.share_of_generation_pct is not None else 0.0
+            gen_current = (
+                current_rec.generation_twh
+                if current_rec and current_rec.generation_twh is not None
+                else 0.0
+            )
+            share_current = (
+                current_rec.share_of_generation_pct
+                if current_rec and current_rec.share_of_generation_pct is not None
+                else 0.0
+            )
 
             # Monthly Growth
             prev_year_rec = one_year_ago_by_fuel.get(fuel_type)
-            gen_prev_year = prev_year_rec.generation_twh if prev_year_rec and prev_year_rec.generation_twh is not None else 0.0
+            gen_prev_year = (
+                prev_year_rec.generation_twh
+                if prev_year_rec and prev_year_rec.generation_twh is not None
+                else 0.0
+            )
 
             growth_current = None
             if gen_prev_year > 0:
