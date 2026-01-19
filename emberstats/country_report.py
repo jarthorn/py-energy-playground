@@ -8,8 +8,9 @@ import json
 import sys
 from pathlib import Path
 from typing import Dict, Iterable, Optional
+from datetime import date
 
-from .analysis import ElectricityStats
+from .analysis import ElectricityStats, CurrentFuelData
 from .country_codes import CountryCode
 from .models import GenerationRecord
 
@@ -185,6 +186,48 @@ class CountryReport:
                     date_str += "*"
                 print(f"{fuel_type:<45} | {date_str:<12} | {value:>15.2f}")
 
+    @staticmethod
+    def _print_energy_mix_table(
+        mix_records: list["CurrentFuelData"], latest_date: Optional[date]
+    ) -> None:
+        if not mix_records:
+            return
+
+        date_str = latest_date.strftime("%b %Y") if latest_date else "Latest Month"
+
+        print("\n" + "=" * 105)
+        print(f"Energy Mix Snapshot: {date_str}")
+        print("=" * 105)
+
+        # Headers
+        headers = [
+            "Fuel Type",
+            "Mth Gen (TWh)",
+            "Share (%)",
+            "Mth Growth (%)",
+            "12M Gen (TWh)",
+            "12M Growth (%)"
+        ]
+
+        print(
+            f"{headers[0]:<20} | {headers[1]:>14} | {headers[2]:>10} | "
+            f"{headers[3]:>14} | {headers[4]:>14} | {headers[5]:>14}"
+        )
+        print("-" * 105)
+
+        for rec in mix_records:
+            mth_growth_str = f"{rec.growth_current_month:+.1f}" if rec.growth_current_month is not None else "-"
+            gen_12m_growth_str = f"{rec.growth_last_12_months:+.1f}" if rec.growth_last_12_months is not None else "-"
+
+            print(
+                f"{rec.fuel_type:<20} | "
+                f"{rec.gen_current_month:>14.2f} | "
+                f"{rec.share_current_month:>10.1f} | "
+                f"{mth_growth_str:>14} | "
+                f"{rec.gen_last_12_months:>14.2f} | "
+                f"{gen_12m_growth_str:>14}"
+            )
+
     def run(self) -> None:
         records = self._load_records()
         stats = ElectricityStats(records)
@@ -193,6 +236,10 @@ class CountryReport:
         opening_paragraph = self._generate_opening_paragraph(stats)
         print(opening_paragraph)
         print()
+
+        # Energy Mix Snapshot
+        mix_records = stats.get_energy_mix()
+        self._print_energy_mix_table(mix_records, stats._get_latest_date())
 
         # Peak share of generation
         peak_share = stats.peak_months_by_series("share_of_generation_pct")

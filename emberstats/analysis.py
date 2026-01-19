@@ -26,6 +26,18 @@ class NewRecord:
     previous_peak: float
 
 
+@dataclass
+class CurrentFuelData:
+    """Statistics for a fuel type in the energy mix table."""
+
+    fuel_type: str
+    gen_current_month: float
+    share_current_month: float
+    growth_current_month: Optional[float]  # vs same month last year
+    gen_last_12_months: float
+    growth_last_12_months: Optional[float]  # vs previous 12 months
+
+
 class ElectricityStats:
     """Encapsulates analysis over monthly electricity generation records."""
 
@@ -265,6 +277,14 @@ class ElectricityStats:
         above_threshold.sort(key=lambda x: x[1], reverse=True)
         return [fuel_type for fuel_type, _ in above_threshold]
 
+    def _calculate_totals_by_fuel_type(self, records: list[GenerationRecord]) -> Dict[str, float]:
+        """Aggregate generation TWh by fuel type for a list of records."""
+        totals: Dict[str, float] = {}
+        for record in records:
+            if record.generation_twh is not None:
+                totals[record.fuel_type] = totals.get(record.fuel_type, 0.0) + record.generation_twh
+        return totals
+
     def fuel_type_growth_rates(self) -> Dict[str, float]:
         """
         Calculate growth rate for each fuel type from previous 12 months to last 12 months.
@@ -281,7 +301,7 @@ class ElectricityStats:
         start_last = self._subtract_months(latest_date, 11)
         records_last = self._get_records_in_date_range(start_last, latest_date)
 
-        # Previous 12 months
+        # Previous 12 months (end_date exclusive logic simulation)
         end_previous = self._subtract_months(latest_date, 11)
         start_previous = self._subtract_months(latest_date, 23)
         records_previous = [
@@ -290,20 +310,8 @@ class ElectricityStats:
             if start_previous <= record.date < end_previous
         ]
 
-        # Sum by fuel type for each period
-        last_by_fuel: Dict[str, float] = {}
-        for record in records_last:
-            if record.generation_twh is not None:
-                last_by_fuel[record.fuel_type] = (
-                    last_by_fuel.get(record.fuel_type, 0.0) + record.generation_twh
-                )
-
-        previous_by_fuel: Dict[str, float] = {}
-        for record in records_previous:
-            if record.generation_twh is not None:
-                previous_by_fuel[record.fuel_type] = (
-                    previous_by_fuel.get(record.fuel_type, 0.0) + record.generation_twh
-                )
+        last_by_fuel = self._calculate_totals_by_fuel_type(records_last)
+        previous_by_fuel = self._calculate_totals_by_fuel_type(records_previous)
 
         # Calculate growth rates
         growth_rates: Dict[str, float] = {}
@@ -350,3 +358,76 @@ class ElectricityStats:
 
         slowest = min(growth_rates.items(), key=lambda x: x[1])
         return slowest
+
+    def get_energy_mix(self) -> list[CurrentFuelData]:
+        """
+        Get a snapshot of the energy mix including current month and rolling 12-month stats.
+
+        Returns:
+            List of CurrentFuelData objects, one per fuel type.
+        """
+        latest_date = self._get_latest_date()
+        if latest_date is None:
+            return []
+
+        # Current month data
+        latest_records = [r for r in self.records if r.date == latest_date]
+        latest_by_fuel = {r.fuel_type: r for r in latest_records}
+
+        # Date 1 year ago for monthly growth
+        one_year_ago_date = self._subtract_months(latest_date, 12)
+        one_year_ago_records = [r for r in self.records if r.date == one_year_ago_date]
+        one_year_ago_by_fuel = {r.fuel_type: r for r in one_year_ago_records}
+
+        # Rolling 12 month data
+        start_last_12 = self._subtract_months(latest_date, 11)
+        records_last_12 = self._get_records_in_date_range(start_last_12, latest_date)
+
+        start_prev_12 = self._subtract_months(latest_date, 23)
+        end_prev_12 = self._subtract_months(latest_date, 11)
+        records_prev_12 = [
+            record
+            for record in self.records
+            if start_prev_12 <= record.date < end_prev_12
+        ]
+
+        total_last_12_by_fuel = self._calculate_totals_by_fuel_type(records_last_12)
+        total_prev_12_by_fuel = self._calculate_totals_by_fuel_type(records_prev_12)
+
+        mix_records = []
+        all_fuel_types = set(latest_by_fuel.keys()) | set(total_last_12_by_fuel.keys())
+
+        for fuel_type in all_fuel_types:
+            # Current Month Stats
+            current_rec = latest_by_fuel.get(fuel_type)
+            gen_current = current_rec.generation_twh if current_rec and current_rec.generation_twh is not None else 0.0
+            share_current = current_rec.share_of_generation_pct if current_rec and current_rec.share_of_generation_pct is not None else 0.0
+
+            # Monthly Growth
+            prev_year_rec = one_year_ago_by_fuel.get(fuel_type)
+            gen_prev_year = prev_year_rec.generation_twh if prev_year_rec and prev_year_rec.generation_twh is not None else 0.0
+
+            growth_current = None
+            if gen_prev_year > 0:
+                growth_current = ((gen_current - gen_prev_year) / gen_prev_year) * 100
+
+            # 12 Month Stats
+            gen_last_12 = total_last_12_by_fuel.get(fuel_type, 0.0)
+            gen_prev_12 = total_prev_12_by_fuel.get(fuel_type, 0.0)
+
+            growth_last_12 = None
+            if gen_prev_12 > 0:
+                growth_last_12 = ((gen_last_12 - gen_prev_12) / gen_prev_12) * 100
+
+            mix_records.append(CurrentFuelData(
+                fuel_type=fuel_type,
+                gen_current_month=gen_current,
+                share_current_month=share_current,
+                growth_current_month=growth_current,
+                gen_last_12_months=gen_last_12,
+                growth_last_12_months=growth_last_12
+            ))
+
+        # Sort by share descending
+        mix_records.sort(key=lambda x: x.share_current_month, reverse=True)
+        return mix_records

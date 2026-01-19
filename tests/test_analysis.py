@@ -87,6 +87,26 @@ class TestElectricityStats(unittest.TestCase):
 
         self.assertEqual(total_twh, 594.03, "Total generation should be 594.03 TWh")
 
+    def test_get_energy_mix(self):
+        """Test fetching the energy mix snapshot."""
+        mix = self.stats.get_energy_mix()
+        self.assertTrue(len(mix) > 0)
+
+        # Spot check Hydro
+        hydro = next(r for r in mix if r.fuel_type == "Hydro")
+        # Latest month in sample is Sep 2025
+        # Hydro gen in Sep 2025: 22.87 TWh
+        # Share: 51.46%
+        self.assertEqual(hydro.gen_current_month, 22.87)
+        self.assertEqual(hydro.share_current_month, 51.46)
+        # Sep 2024 Hydro: 23.99 TWh. Growth = (22.87 - 23.99)/23.99 * 100 = -4.67%
+        self.assertAlmostEqual(hydro.growth_current_month, -4.67, places=2)
+
+        # Last 12 months vs Prev
+        # Using totals from other tests/checks or just verify it's populated
+        self.assertIsNotNone(hydro.gen_last_12_months)
+        self.assertIsNotNone(hydro.growth_last_12_months)
+
 
 if __name__ == "__main__":
     unittest.main()
