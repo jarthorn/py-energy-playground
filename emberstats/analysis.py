@@ -205,15 +205,8 @@ class ElectricityStats:
             return 0.0
 
         start_date = self._subtract_months(latest_date, 23)
-        end_date = self._subtract_months(latest_date, 11)
-
-        # Get records from start_date (inclusive) to end_date (exclusive)
-        # Since records are on the 1st, we want end_date to be exclusive
-        records_previous = [
-            record
-            for record in self.records
-            if start_date <= record.date < end_date
-        ]
+        end_date = self._subtract_months(latest_date, 12)
+        records_previous = self._get_records_in_date_range(start_date, end_date)
         total = sum(
             record.generation_twh
             for record in records_previous
@@ -301,14 +294,10 @@ class ElectricityStats:
         start_last = self._subtract_months(latest_date, 11)
         records_last = self._get_records_in_date_range(start_last, latest_date)
 
-        # Previous 12 months (end_date exclusive logic simulation)
-        end_previous = self._subtract_months(latest_date, 11)
+        # Previous 12 months
+        end_previous = self._subtract_months(latest_date, 12)
         start_previous = self._subtract_months(latest_date, 23)
-        records_previous = [
-            record
-            for record in self.records
-            if start_previous <= record.date < end_previous
-        ]
+        records_previous = self._get_records_in_date_range(start_previous, end_previous)
 
         last_by_fuel = self._calculate_totals_by_fuel_type(records_last)
         previous_by_fuel = self._calculate_totals_by_fuel_type(records_previous)
@@ -384,12 +373,8 @@ class ElectricityStats:
         records_last_12 = self._get_records_in_date_range(start_last_12, latest_date)
 
         start_prev_12 = self._subtract_months(latest_date, 23)
-        end_prev_12 = self._subtract_months(latest_date, 11)
-        records_prev_12 = [
-            record
-            for record in self.records
-            if start_prev_12 <= record.date < end_prev_12
-        ]
+        end_prev_12 = self._subtract_months(latest_date, 12)
+        records_prev_12 = self._get_records_in_date_range(start_prev_12, end_prev_12)
 
         total_last_12_by_fuel = self._calculate_totals_by_fuel_type(records_last_12)
         total_prev_12_by_fuel = self._calculate_totals_by_fuel_type(records_prev_12)
