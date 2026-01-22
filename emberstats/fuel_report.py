@@ -75,8 +75,7 @@ class FuelReport:
             prev_gen = agg.generation_twh
 
     def run(self, fuel_type: str) -> None:
-        records = self.load_all_data()
-        stats = ElectricityStats(records)
+        stats = ElectricityStats(self.load_all_data())
 
         aggregated = stats.aggregate_by_year(fuel_type)
 

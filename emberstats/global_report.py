@@ -39,7 +39,7 @@ class GlobalReport:
                 continue
         return country_files
 
-    def _load_records(self, file_path: Path) -> Tuple[list[GenerationData], date | None]:
+    def _load_generation_data(self, file_path: Path) -> Tuple[list[GenerationData], date | None]:
         """Load data from a country data file and return (data, latest_date)."""
         with file_path.open("r") as f:
             content = json.load(f)
@@ -69,13 +69,13 @@ class GlobalReport:
 
         for country_code, file_path in country_files:
             try:
-                records, latest_date = self._load_records(file_path)
+                generation_data, latest_date = self._load_generation_data(file_path)
                 if latest_date is None:
                     continue
 
                 # Use ElectricityStats to find new records
-                stats = ElectricityStats(records)
-                country_name = records[0].country if records else country_code.value
+                stats = ElectricityStats(generation_data)
+                country_name = generation_data[0].country if generation_data else country_code.value
                 new_records = stats.find_new_records_in_latest_month(
                     latest_date=latest_date,
                     metric_attr=metric_attr,
@@ -108,12 +108,12 @@ class GlobalReport:
 
         for country_code, file_path in country_files:
             try:
-                records, _ = self._load_records(file_path)
-                if not records:
+                generation_data, _ = self._load_generation_data(file_path)
+                if not generation_data:
                     continue
 
                 # Find peak months for each fuel type
-                stats = ElectricityStats(records)
+                stats = ElectricityStats(generation_data)
                 peaks = stats.peak_months_by_series("share_of_generation_pct")
 
                 # Extract year from peak date for each fuel type
@@ -197,8 +197,8 @@ class GlobalReport:
 
         # Calculate column widths
         year_width = 10
-        fuel_type_width = 15
-        total_width = year_width + 2 + len(fuel_types) * (fuel_type_width + 3) - 3
+        fuel_type_width = 11
+        total_width = year_width + 2 + len(fuel_types) * (fuel_type_width + 3)
 
         # Print header
         header = f"{'Year':<{year_width}} |"

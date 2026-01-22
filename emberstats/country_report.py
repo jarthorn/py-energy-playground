@@ -16,7 +16,7 @@ from .models import GenerationData
 
 
 class CountryReport:
-    """Loads records from a file, runs analyses, and prints to stdout."""
+    """Loads data records from a file, runs analyses, and prints to stdout."""
 
     LINE_LENGTH = 105
 
@@ -28,26 +28,26 @@ class CountryReport:
             self.country_code = country_code
         self.input_path = Path(input_path)
 
-    def _load_records(self) -> Iterable[GenerationData]:
+    def _load_generation_data(self) -> Iterable[GenerationData]:
         with self.input_path.open("r") as f:
             content = json.load(f)
         data_list = content.get("data", [])
 
         # Load all records first (date parsing happens in GenerationData.from_dict)
-        records = [GenerationData.from_dict(record_dict) for record_dict in data_list]
+        gen_data = [GenerationData.from_dict(entry_dict) for entry_dict in data_list]
 
         # Find the latest date from loaded records
         max_date = None
-        for record in records:
-            if max_date is None or record.date > max_date:
-                max_date = record.date
+        for entry in gen_data:
+            if max_date is None or entry.date > max_date:
+                max_date = entry.date
 
         # Update records that match the latest date
-        for record in records:
-            if record.date == max_date:
-                record.is_latest_month = True
+        for entry in gen_data:
+            if entry.date == max_date:
+                entry.is_latest_month = True
 
-        return records
+        return gen_data
 
     @staticmethod
     def _calculate_global_rank(
@@ -231,7 +231,7 @@ class CountryReport:
         print("=" * CountryReport.LINE_LENGTH)
 
     def run(self) -> None:
-        records = self._load_records()
+        records = self._load_generation_data()
         stats = ElectricityStats(records)
 
         # Print opening paragraph
