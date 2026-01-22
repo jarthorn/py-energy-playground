@@ -37,6 +37,15 @@ class CurrentFuelData:
     growth_last_12_months: Optional[float]  # vs previous 12 months
 
 
+@dataclass
+class YearlyAggregation:
+    """Aggregated generation data for a specific year."""
+
+    year: int
+    generation_twh: float
+    is_partial: bool
+
+
 class ElectricityStats:
     """Encapsulates analysis over monthly electricity generation records."""
 
@@ -46,6 +55,47 @@ class ElectricityStats:
             records: Iterable of GenerationRecord objects (typically the API 'data' array).
         """
         self.records: Iterable[GenerationRecord] = records or []
+
+    def aggregate_by_year(self, fuel_type: Optional[str] = None) -> list[YearlyAggregation]:
+        """
+        Aggregate generation by year, optionally filtering by fuel type.
+
+        Args:
+            fuel_type: If provided, filter records to this fuel type (case-insensitive).
+
+        Returns:
+            List of YearlyAggregation objects sorted by year.
+        """
+        # Filter records
+        records = self.records
+        if fuel_type:
+            fuel_type_lower = fuel_type.lower()
+            records = [r for r in records if r.fuel_type and r.fuel_type.lower() == fuel_type_lower]
+
+        # Group by year
+        by_year: Dict[int, list[GenerationRecord]] = {}
+        for r in records:
+            year = r.date.year
+            if year not in by_year:
+                by_year[year] = []
+            by_year[year].append(r)
+
+        results = []
+        for year, year_records in sorted(by_year.items()):
+            # Sum generation
+            total_gen = sum(r.generation_twh for r in year_records if r.generation_twh is not None)
+
+            # Check for partial year: count unique months
+            unique_months = set(r.date.month for r in year_records)
+            is_partial = len(unique_months) < 12
+
+            results.append(YearlyAggregation(
+                year=year,
+                generation_twh=total_gen,
+                is_partial=is_partial
+            ))
+
+        return results
 
     def peak_months_by_series(self, metric_attr: str) -> Dict[str, GenerationRecord]:
         """

@@ -107,6 +107,34 @@ class TestElectricityStats(unittest.TestCase):
         self.assertIsNotNone(hydro.gen_last_12_months)
         self.assertIsNotNone(hydro.growth_last_12_months)
 
+    def test_aggregate_by_year(self):
+        """Test aggregating generation by year."""
+        # Canada sample data has years 2020-2025
+        # 2020 should be full year (12 months)
+        # 2025 has data up to September (9 months) -> Partial
+
+        aggs = self.stats.aggregate_by_year()
+        self.assertTrue(len(aggs) > 0)
+
+        # Check 2020
+        agg_2020 = next(a for a in aggs if a.year == 2020)
+        self.assertFalse(agg_2020.is_partial)
+        # Compare with value manually calculated from sample data
+        self.assertEqual(agg_2020.generation_twh, 577.55)
+
+        # Check 2025 (Partial)
+        agg_2025 = next(a for a in aggs if a.year == 2025)
+        self.assertTrue(agg_2025.is_partial)
+
+        # Check filtering by fuel type "Hydro"
+        hydro_aggs = self.stats.aggregate_by_year(fuel_type="Hydro")
+        hydro_2020 = next(a for a in hydro_aggs if a.year == 2020)
+
+        # Verify it sums correctly (Hydro 2020 total from sample check or approximation)
+        # We know it should be less than total 2020
+        self.assertLess(hydro_2020.generation_twh, agg_2020.generation_twh)
+        self.assertFalse(hydro_2020.is_partial)
+
 
 if __name__ == "__main__":
     unittest.main()

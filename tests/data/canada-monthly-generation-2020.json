@@ -1,0 +1,1228 @@
+{
+    "stats": {
+        "timestamp": "2026-01-15T17:10:29.242656Z",
+        "response_time_in_seconds": 0.453,
+        "rate_limit": "No",
+        "number_of_records": 690,
+        "query_parameters_used": {
+            "is_aggregate_entity": [
+                "false"
+            ],
+            "start_date": [
+                "2020-01"
+            ],
+            "entity_code": [
+                "CAN"
+            ],
+            "is_aggregate_series": [
+                "false"
+            ]
+        },
+        "available_metrics": [
+            "generation_twh",
+            "share_of_generation_pct"
+        ]
+    },
+    "data": [
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.95,
+            "share_of_generation_pct": 1.52
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 3.67,
+            "share_of_generation_pct": 5.86
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 6.93,
+            "share_of_generation_pct": 11.06
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 38.79,
+            "share_of_generation_pct": 61.89
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -4.0,
+            "share_of_generation_pct": -6.38
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 8.9,
+            "share_of_generation_pct": 14.2
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.49,
+            "share_of_generation_pct": 0.78
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.07,
+            "share_of_generation_pct": 0.11
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-01-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 2.87,
+            "share_of_generation_pct": 4.58
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.87,
+            "share_of_generation_pct": 1.49
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 3.36,
+            "share_of_generation_pct": 5.76
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 6.35,
+            "share_of_generation_pct": 10.89
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 36.17,
+            "share_of_generation_pct": 62.03
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -3.85,
+            "share_of_generation_pct": -6.6
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 7.44,
+            "share_of_generation_pct": 12.76
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.45,
+            "share_of_generation_pct": 0.77
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.12,
+            "share_of_generation_pct": 0.21
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-02-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 3.54,
+            "share_of_generation_pct": 6.07
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.85,
+            "share_of_generation_pct": 1.47
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 3.3,
+            "share_of_generation_pct": 5.72
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 6.22,
+            "share_of_generation_pct": 10.79
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 35.3,
+            "share_of_generation_pct": 61.22
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -4.26,
+            "share_of_generation_pct": -7.39
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 7.94,
+            "share_of_generation_pct": 13.77
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.44,
+            "share_of_generation_pct": 0.76
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.22,
+            "share_of_generation_pct": 0.38
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-03-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 3.38,
+            "share_of_generation_pct": 5.86
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.7,
+            "share_of_generation_pct": 1.43
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 2.71,
+            "share_of_generation_pct": 5.55
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 5.11,
+            "share_of_generation_pct": 10.47
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 29.07,
+            "share_of_generation_pct": 59.57
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -4.24,
+            "share_of_generation_pct": -8.69
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 7.54,
+            "share_of_generation_pct": 15.45
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.37,
+            "share_of_generation_pct": 0.76
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.24,
+            "share_of_generation_pct": 0.49
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-04-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 3.05,
+            "share_of_generation_pct": 6.25
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.62,
+            "share_of_generation_pct": 1.32
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 2.38,
+            "share_of_generation_pct": 5.08
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 4.49,
+            "share_of_generation_pct": 9.59
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 28.45,
+            "share_of_generation_pct": 60.74
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -5.32,
+            "share_of_generation_pct": -11.36
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 7.48,
+            "share_of_generation_pct": 15.97
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.32,
+            "share_of_generation_pct": 0.68
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.29,
+            "share_of_generation_pct": 0.62
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-05-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 2.8,
+            "share_of_generation_pct": 5.98
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.67,
+            "share_of_generation_pct": 1.42
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 2.57,
+            "share_of_generation_pct": 5.43
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 4.86,
+            "share_of_generation_pct": 10.28
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 28.25,
+            "share_of_generation_pct": 59.74
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -5.04,
+            "share_of_generation_pct": -10.66
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 7.95,
+            "share_of_generation_pct": 16.81
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.35,
+            "share_of_generation_pct": 0.74
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.33,
+            "share_of_generation_pct": 0.7
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-06-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 2.3,
+            "share_of_generation_pct": 4.86
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.8,
+            "share_of_generation_pct": 1.52
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 3.1,
+            "share_of_generation_pct": 5.87
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 5.86,
+            "share_of_generation_pct": 11.1
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 31.3,
+            "share_of_generation_pct": 59.31
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -6.5,
+            "share_of_generation_pct": -12.32
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 9.06,
+            "share_of_generation_pct": 17.17
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.42,
+            "share_of_generation_pct": 0.8
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.34,
+            "share_of_generation_pct": 0.64
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-07-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 1.88,
+            "share_of_generation_pct": 3.56
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.84,
+            "share_of_generation_pct": 1.64
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 3.23,
+            "share_of_generation_pct": 6.32
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 6.1,
+            "share_of_generation_pct": 11.94
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 29.65,
+            "share_of_generation_pct": 58.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -6.6,
+            "share_of_generation_pct": -12.92
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 8.2,
+            "share_of_generation_pct": 16.05
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.43,
+            "share_of_generation_pct": 0.84
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.3,
+            "share_of_generation_pct": 0.59
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-08-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 2.34,
+            "share_of_generation_pct": 4.58
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.76,
+            "share_of_generation_pct": 1.66
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 2.93,
+            "share_of_generation_pct": 6.41
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 5.53,
+            "share_of_generation_pct": 12.1
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 26.2,
+            "share_of_generation_pct": 57.34
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -4.43,
+            "share_of_generation_pct": -9.7
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 6.7,
+            "share_of_generation_pct": 14.66
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.39,
+            "share_of_generation_pct": 0.85
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.27,
+            "share_of_generation_pct": 0.59
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-09-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 2.9,
+            "share_of_generation_pct": 6.35
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.8,
+            "share_of_generation_pct": 1.6
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 3.08,
+            "share_of_generation_pct": 6.18
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 5.82,
+            "share_of_generation_pct": 11.68
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 29.51,
+            "share_of_generation_pct": 59.2
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -4.57,
+            "share_of_generation_pct": -9.17
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 6.96,
+            "share_of_generation_pct": 13.96
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.41,
+            "share_of_generation_pct": 0.82
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.17,
+            "share_of_generation_pct": 0.34
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-10-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 3.09,
+            "share_of_generation_pct": 6.2
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.82,
+            "share_of_generation_pct": 1.54
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 3.17,
+            "share_of_generation_pct": 5.95
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 5.99,
+            "share_of_generation_pct": 11.24
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 31.47,
+            "share_of_generation_pct": 59.08
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -3.9,
+            "share_of_generation_pct": -7.32
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 7.16,
+            "share_of_generation_pct": 13.44
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.42,
+            "share_of_generation_pct": 0.79
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.14,
+            "share_of_generation_pct": 0.26
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-11-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 4.09,
+            "share_of_generation_pct": 7.68
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Bioenergy",
+            "is_aggregate_series": false,
+            "generation_twh": 0.9,
+            "share_of_generation_pct": 1.47
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Coal",
+            "is_aggregate_series": false,
+            "generation_twh": 3.47,
+            "share_of_generation_pct": 5.67
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Gas",
+            "is_aggregate_series": false,
+            "generation_twh": 6.55,
+            "share_of_generation_pct": 10.69
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Hydro",
+            "is_aggregate_series": false,
+            "generation_twh": 38.45,
+            "share_of_generation_pct": 62.78
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Net imports",
+            "is_aggregate_series": false,
+            "generation_twh": -5.25,
+            "share_of_generation_pct": -8.57
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Nuclear",
+            "is_aggregate_series": false,
+            "generation_twh": 7.32,
+            "share_of_generation_pct": 11.95
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Other fossil",
+            "is_aggregate_series": false,
+            "generation_twh": 0.46,
+            "share_of_generation_pct": 0.75
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Other renewables",
+            "is_aggregate_series": false,
+            "generation_twh": 0.01,
+            "share_of_generation_pct": 0.02
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Solar",
+            "is_aggregate_series": false,
+            "generation_twh": 0.07,
+            "share_of_generation_pct": 0.11
+        },
+        {
+            "entity": "Canada",
+            "entity_code": "CAN",
+            "is_aggregate_entity": false,
+            "date": "2020-12-01",
+            "series": "Wind",
+            "is_aggregate_series": false,
+            "generation_twh": 4.02,
+            "share_of_generation_pct": 6.56
+        }
+    ]
+}
