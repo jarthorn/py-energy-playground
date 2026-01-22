@@ -136,5 +136,35 @@ class TestElectricityStats(unittest.TestCase):
         self.assertFalse(hydro_2020.is_partial)
 
 
+    def test_find_new_records_in_latest_month(self):
+        """Test finding new records in the latest month."""
+        # Canada sample data:
+        # Latest month is 2025-09-01
+        latest_date = date(2025, 9, 1)
+
+        new_records = self.stats.find_new_records_in_latest_month(
+            latest_date=latest_date,
+            metric_attr="generation_twh",
+            country_code="CAN",
+            country_name="Canada"
+        )
+
+        # If there are new records, check structure
+        for record in new_records:
+            self.assertIsNotNone(record.previous_peak_date)
+            # Date format check
+            self.assertRegex(record.previous_peak_date, r"\d{4}-\d{2}-\d{2}")
+            self.assertEqual(record.country_code, "CAN")
+            self.assertEqual(record.country_name, "Canada")
+            if (record.fuel_type == "Hydro"):
+                self.assertEqual(record.value, 22.87)
+                self.assertEqual(record.previous_peak, 23.99)
+
+        # Let's check share_of_generation_pct
+        peaks = self.stats.peak_months_by_series("share_of_generation_pct")
+        # Ensure we have some peaks
+        self.assertTrue(len(peaks) > 0)
+
+
 if __name__ == "__main__":
     unittest.main()

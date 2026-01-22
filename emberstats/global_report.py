@@ -21,9 +21,11 @@ from .models import GenerationData
 class GlobalReport:
     """Analyzes all loaded country data to find new records set in the latest month."""
 
-    def __init__(self, data_dir: Path, output_csv: bool = False) -> None:
+    LINE_LENGTH = 110
+
+    def __init__(self, data_dir: Path, output_format: str = "text") -> None:
         self.data_dir = Path(data_dir)
-        self.output_csv = output_csv
+        self.output_format = output_format
 
     def _find_country_files(self) -> list[tuple[CountryCode, Path]]:
         """Find all country data files and return tuples of (CountryCode, file_path)."""
@@ -137,8 +139,10 @@ class GlobalReport:
             print("No peak year data available.")
             return
 
-        if self.output_csv:
+        if self.output_format == "csv":
             self._print_peak_year_histogram_csv(histogram, title)
+        elif self.output_format == "tweet":
+            return
         else:
             self._print_peak_year_histogram_table(histogram, title)
 
@@ -179,9 +183,9 @@ class GlobalReport:
         self, histogram: Dict[str, Dict[int, int]], title: str
     ) -> None:
         """Print peak year histogram in formatted table format."""
-        print("\n" + "=" * 95)
+        print("\n" + "=" * GlobalReport.LINE_LENGTH )
         print(title)
-        print("=" * 95)
+        print("=" * GlobalReport.LINE_LENGTH)
 
         if not histogram:
             return
@@ -230,10 +234,41 @@ class GlobalReport:
         # Sort by fuel type
         all_records.sort(key=lambda x: x.fuel_type)
 
-        if self.output_csv:
+        if self.output_format == "csv":
             self._print_new_records_csv(all_records, title, unit_label)
+        elif self.output_format == "tweet":
+            self._print_new_records_tweet(all_records, unit_label)
         else:
             self._print_new_records_table(all_records, title, unit_label)
+
+    def _print_new_records_tweet(
+        self, all_records: list[NewRecord], unit_label: str
+    ) -> None:
+        """Print new records in tweet format."""
+        # Clean unit label (remove parens)
+        units = unit_label.replace("(", "").replace(")", "")
+        metric_name = "generation share" if "%" in unit_label else "total generation"
+
+        # Fuel types to skip
+        SKIP_FUEL_TYPES = {"Other fossil", "Other renewables", "Net imports"}
+
+        for record in all_records:
+            if record.fuel_type in SKIP_FUEL_TYPES:
+                continue
+
+            date_obj = date.fromisoformat(record.date)
+            date_str = date_obj.strftime("%B %Y")
+
+            prev_date_str = "unknown date"
+            if record.previous_peak_date:
+                prev_date_obj = date.fromisoformat(record.previous_peak_date)
+                prev_date_str = prev_date_obj.strftime("%B %Y")
+
+            print(
+                f"In {date_str} {record.country_name} hit a new electricity record for {metric_name} "
+                f"of {record.value} {units} in {record.fuel_type.lower()} power. "
+                f"This exceeds the previous peak of {record.previous_peak} set in {prev_date_str}."
+            )
 
     def _print_new_records_csv(
         self, all_records: list[NewRecord], title: str, unit_label: str
@@ -244,8 +279,14 @@ class GlobalReport:
         # Output CSV
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow(["Fuel Type", "Country", "Date", f"New Record {unit_label}", f"Previous Peak {unit_label}"])
-
+        writer.writerow([
+            "Fuel Type",
+            "Country",
+            "Date",
+            f"New Record {unit_label}",
+            f"Previous Peak {unit_label}",
+            "Previous Date"
+        ])
         for record in all_records:
             writer.writerow(
                 [
@@ -254,6 +295,7 @@ class GlobalReport:
                     record.date,
                     f"{record.value:.2f}",
                     f"{record.previous_peak:.2f}",
+                    record.previous_peak_date or "N/A",
                 ]
             )
 
@@ -263,19 +305,20 @@ class GlobalReport:
         self, all_records: list[NewRecord], title: str, unit_label: str
     ) -> None:
         """Print a table of new records in a formatted table suitable for command line viewing."""
-        print("\n" + "=" * 95)
+        print("\n" + "=" * GlobalReport.LINE_LENGTH)
         print(title)
-        print("=" * 95)
+        print("=" * GlobalReport.LINE_LENGTH)
 
         print(
             f"{'Fuel Type':<20} | {'Country':<15} | {'Date':<12} | "
-            f"{f'New Record {unit_label}':>15} | {f'Previous Peak {unit_label}':>15}"
+            f"{f'New Record {unit_label}':>15} | {f'Previous Peak {unit_label}':>15} | {'Previous Date':<12}"
         )
-        print("-" * 95)
+        print("-" * GlobalReport.LINE_LENGTH)
         for record in all_records:
+            prev_date_str = record.previous_peak_date or "N/A"
             print(
                 f"{record.fuel_type:<20} | {record.country_name:<15} | {record.date:<12} | "
-                f"{record.value:>15.2f} | {record.previous_peak:>18.2f}"
+                f"{record.value:>15.2f} | {record.previous_peak:>18.2f} | {prev_date_str:<12}"
             )
 
     def run(self) -> None:
@@ -297,19 +340,20 @@ class GlobalReport:
         )
 
         # Peak year histogram by fuel type
-        peak_year_histogram = self._compute_peak_year_histogram()
-        self._print_peak_year_histogram(
-            peak_year_histogram,
-            title="Peak Year Histogram: Countries Reaching Peak Share of Generation by Fuel Type",
-        )
+        if self.output_format != "tweet":
+            peak_year_histogram = self._compute_peak_year_histogram()
+            self._print_peak_year_histogram(
+                peak_year_histogram,
+                title="Peak Year Histogram: Countries Reaching Peak Share of Generation by Fuel Type",
+            )
 
 
-def main(output_csv: bool = False) -> None:
+def main(output_format: str = "text") -> None:
     """
     Main entrypoint for global_report.py.
 
     Args:
-        output_csv: If True, output in CSV format; otherwise output formatted table
+        output_format: Output format ("text", "csv", or "tweet")
     """
     project_root = Path(__file__).parent.parent
     data_dir = project_root / "data"
@@ -319,10 +363,21 @@ def main(output_csv: bool = False) -> None:
         print("Please run the load program first to fetch data for at least one country.")
         return
 
-    report = GlobalReport(data_dir, output_csv=output_csv)
+    report = GlobalReport(data_dir, output_format=output_format)
     report.run()
 
 
 if __name__ == "__main__":
-    output_csv = "-csv" in sys.argv or "--csv" in sys.argv
-    main(output_csv=output_csv)
+    format_arg = "text"
+    # Handle --format=X argument
+    for arg in sys.argv:
+        if arg.startswith("--format="):
+            format_arg = arg.split("=", 1)[1].lower()
+            break
+
+    # Validate format
+    if format_arg not in ["text", "csv", "tweet"]:
+        print(f"Error: Invalid format '{format_arg}'. Must be 'text', 'csv', or 'tweet'.", file=sys.stderr)
+        sys.exit(1)
+
+    main(output_format=format_arg)

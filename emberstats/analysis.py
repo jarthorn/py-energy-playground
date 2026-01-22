@@ -24,6 +24,7 @@ class NewRecord:
     date: str
     value: float
     previous_peak: float
+    previous_peak_date: Optional[str]
 
 @dataclass
 class CurrentFuelData:
@@ -168,6 +169,9 @@ class ElectricityStats:
             previous_peak_value = (
                 getattr(previous_peak_entry, metric_attr, None) if previous_peak_entry else None
             )
+            previous_peak_date = (
+                previous_peak_entry.date.isoformat() if previous_peak_entry else None
+            )
 
             # If no previous peak or latest value exceeds previous peak
             if previous_peak_value is None or value > previous_peak_value:
@@ -179,6 +183,7 @@ class ElectricityStats:
                         date=latest_date.isoformat(),
                         value=value,
                         previous_peak=previous_peak_value if previous_peak_value is not None else 0.0,
+                        previous_peak_date=previous_peak_date,
                     )
                 )
 
