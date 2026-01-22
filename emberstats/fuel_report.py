@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .analysis import ElectricityStats, YearlyAggregation
-from .models import GenerationRecord
+from .models import GenerationData
 
 
 class FuelReport:
@@ -19,9 +19,9 @@ class FuelReport:
     def __init__(self, data_dir: Path) -> None:
         self.data_dir = Path(data_dir)
 
-    def load_all_data(self) -> Iterable[GenerationRecord]:
-        """Load all records from all JSON files in the data directory."""
-        all_records = []
+    def load_all_data(self) -> Iterable[GenerationData]:
+        """Load all entries from all JSON files in the data directory."""
+        all_data = []
         for file_path in self.data_dir.glob("*-monthly-generation.json"):
             try:
                 with file_path.open("r") as f:
@@ -32,16 +32,16 @@ class FuelReport:
                 if not data_list:
                     continue
 
-                # Load records
-                country_records = [
-                    GenerationRecord.from_dict(record_dict)
-                    for record_dict in data_list
+                # Load entries
+                country_data = [
+                    GenerationData.from_dict(entry_dict)
+                    for entry_dict in data_list
                 ]
-                all_records.extend(country_records)
+                all_data.extend(country_data)
             except Exception as e:
                 print(f"Warning: Failed to load {file_path.name}: {e}", file=sys.stderr)
                 continue
-        return all_records
+        return all_data
 
     def print_report(self, aggs: list[YearlyAggregation], fuel_type: str) -> None:
         """Print the aggregated report table."""

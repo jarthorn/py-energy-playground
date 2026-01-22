@@ -11,7 +11,7 @@ from datetime import date
 from typing import Dict, Iterable, Optional, Tuple
 
 from .country_codes import CountryCode
-from .models import GenerationRecord
+from .models import GenerationData
 
 
 @dataclass
@@ -47,14 +47,14 @@ class YearlyAggregation:
 
 
 class ElectricityStats:
-    """Encapsulates analysis over monthly electricity generation records."""
+    """Encapsulates analysis over monthly electricity generation data."""
 
-    def __init__(self, records: Iterable[GenerationRecord]):
+    def __init__(self, generation_data: Iterable[GenerationData]):
         """
         Args:
-            records: Iterable of GenerationRecord objects (typically the API 'data' array).
+            generation_data: Iterable of GenerationData objects (typically the API 'data' array).
         """
-        self.records: Iterable[GenerationRecord] = records or []
+        self.generation_data: Iterable[GenerationData] = generation_data or []
 
     def aggregate_by_year(self, fuel_type: Optional[str] = None) -> list[YearlyAggregation]:
         """
@@ -66,19 +66,19 @@ class ElectricityStats:
         Returns:
             List of YearlyAggregation objects sorted by year.
         """
-        # Filter records
-        records = self.records
+        # Filter data
+        generation_data = self.generation_data
         if fuel_type:
             fuel_type_lower = fuel_type.lower()
-            records = [r for r in records if r.fuel_type and r.fuel_type.lower() == fuel_type_lower]
+            generation_data = [d for d in generation_data if d.fuel_type and d.fuel_type.lower() == fuel_type_lower]
 
         # Group by year
-        by_year: Dict[int, list[GenerationRecord]] = {}
-        for r in records:
-            year = r.date.year
+        by_year: Dict[int, list[GenerationData]] = {}
+        for entry in generation_data:
+            year = entry.date.year
             if year not in by_year:
                 by_year[year] = []
-            by_year[year].append(r)
+            by_year[year].append(entry)
 
         results = []
         for year, year_records in sorted(by_year.items()):
@@ -97,7 +97,7 @@ class ElectricityStats:
 
         return results
 
-    def peak_months_by_series(self, metric_attr: str) -> Dict[str, GenerationRecord]:
+    def peak_months_by_series(self, metric_attr: str) -> Dict[str, GenerationData]:
         """
         Compute the month with the peak value for each fuel type for a given metric.
 
@@ -105,25 +105,25 @@ class ElectricityStats:
             metric_attr: Attribute name of the metric to use (e.g. 'share_of_generation_pct', 'generation_twh')
 
         Returns:
-            Mapping: fuel_type -> GenerationRecord (the record with the peak value for that fuel type)
+            Mapping: fuel_type -> GenerationData (the entry with the peak value for that fuel type)
         """
-        peak_by_series: Dict[str, GenerationRecord] = {}
+        peak_by_series: Dict[str, GenerationData] = {}
 
-        for record in self.records:
-            if not record.fuel_type:
+        for entry in self.generation_data:
+            if not entry.fuel_type:
                 continue
 
-            value = getattr(record, metric_attr, None)
+            value = getattr(entry, metric_attr, None)
             if value is None:
                 continue
 
-            current_peak = peak_by_series.get(record.fuel_type)
+            current_peak = peak_by_series.get(entry.fuel_type)
             if current_peak is None:
-                peak_by_series[record.fuel_type] = record
+                peak_by_series[entry.fuel_type] = entry
             else:
                 current_value = getattr(current_peak, metric_attr, None)
                 if current_value is not None and value > current_value:
-                    peak_by_series[record.fuel_type] = record
+                    peak_by_series[entry.fuel_type] = entry
 
         return peak_by_series
 
@@ -146,27 +146,27 @@ class ElectricityStats:
         Returns:
             List of NewRecord objects for fuel types that set new records in the latest month
         """
-        # Get all records from before the latest month
-        records_before_latest = [r for r in self.records if r.date < latest_date]
-        latest_records = [r for r in self.records if r.date == latest_date]
+        # Get all entries from before the latest month
+        data_before_latest = [d for d in self.generation_data if d.date < latest_date]
+        latest_data = [d for d in self.generation_data if d.date == latest_date]
 
         # For each fuel type, find the peak before latest month
-        stats_before = ElectricityStats(records_before_latest)
+        stats_before = ElectricityStats(data_before_latest)
         peaks_before = stats_before.peak_months_by_series(metric_attr)
 
         new_records = []
-        # Check each latest month record to see if it's a new peak
-        for latest_record in latest_records:
-            if not latest_record.fuel_type:
+        # Check each latest month entry to see if it's a new peak
+        for latest_entry in latest_data:
+            if not latest_entry.fuel_type:
                 continue
 
-            value = getattr(latest_record, metric_attr, None)
+            value = getattr(latest_entry, metric_attr, None)
             if value is None:
                 continue
 
-            previous_peak_record = peaks_before.get(latest_record.fuel_type)
+            previous_peak_entry = peaks_before.get(latest_entry.fuel_type)
             previous_peak_value = (
-                getattr(previous_peak_record, metric_attr, None) if previous_peak_record else None
+                getattr(previous_peak_entry, metric_attr, None) if previous_peak_entry else None
             )
 
             # If no previous peak or latest value exceeds previous peak
@@ -175,7 +175,7 @@ class ElectricityStats:
                     NewRecord(
                         country_code=country_code,
                         country_name=country_name,
-                        fuel_type=latest_record.fuel_type,
+                        fuel_type=latest_entry.fuel_type,
                         date=latest_date.isoformat(),
                         value=value,
                         previous_peak=previous_peak_value if previous_peak_value is not None else 0.0,
@@ -185,10 +185,10 @@ class ElectricityStats:
         return new_records
 
     def _get_latest_date(self) -> Optional[date]:
-        """Get the most recent date from records."""
-        if not self.records:
+        """Get the most recent date from data."""
+        if not self.generation_data:
             return None
-        return max(record.date for record in self.records)
+        return max(entry.date for entry in self.generation_data)
 
     @staticmethod
     def _subtract_months(from_date: date, months: int) -> date:
@@ -210,14 +210,14 @@ class ElectricityStats:
             year -= 1
         return date(year, month, 1)
 
-    def _get_records_in_date_range(
+    def _get_data_in_date_range(
         self, start_date: date, end_date: date
-    ) -> list[GenerationRecord]:
-        """Get records within a date range (inclusive)."""
+    ) -> list[GenerationData]:
+        """Get data entries within a date range (inclusive)."""
         return [
-            record
-            for record in self.records
-            if start_date <= record.date <= end_date
+            entry
+            for entry in self.generation_data
+            if start_date <= entry.date <= end_date
         ]
 
     def total_generation_last_12_months(self) -> Tuple[float, Optional[date]]:
@@ -233,11 +233,11 @@ class ElectricityStats:
 
         start_date = self._subtract_months(latest_date, 11)
 
-        records_12_months = self._get_records_in_date_range(start_date, latest_date)
+        data_12_months = self._get_data_in_date_range(start_date, latest_date)
         total = sum(
-            record.generation_twh
-            for record in records_12_months
-            if record.generation_twh is not None
+            entry.generation_twh
+            for entry in data_12_months
+            if entry.generation_twh is not None
         )
 
         return (total, latest_date)
@@ -255,11 +255,11 @@ class ElectricityStats:
 
         start_date = self._subtract_months(latest_date, 23)
         end_date = self._subtract_months(latest_date, 12)
-        records_previous = self._get_records_in_date_range(start_date, end_date)
+        data_previous = self._get_data_in_date_range(start_date, end_date)
         total = sum(
-            record.generation_twh
-            for record in records_previous
-            if record.generation_twh is not None
+            entry.generation_twh
+            for entry in data_previous
+            if entry.generation_twh is not None
         )
 
         return total
@@ -294,14 +294,14 @@ class ElectricityStats:
         if latest_date is None:
             return []
 
-        # Get all records from the most recent month
-        latest_records = [r for r in self.records if r.date == latest_date]
+        # Get all entries from the most recent month
+        latest_data = [d for d in self.generation_data if d.date == latest_date]
 
         # Calculate total generation for the month
         total_generation = sum(
-            record.generation_twh
-            for record in latest_records
-            if record.generation_twh is not None
+            entry.generation_twh
+            for entry in latest_data
+            if entry.generation_twh is not None
         )
 
         if total_generation == 0:
@@ -309,22 +309,22 @@ class ElectricityStats:
 
         # Find fuel types above threshold
         above_threshold = []
-        for record in latest_records:
-            if record.generation_twh is not None and record.generation_twh > 0:
-                share = (record.generation_twh / total_generation) * 100
+        for entry in latest_data:
+            if entry.generation_twh is not None and entry.generation_twh > 0:
+                share = (entry.generation_twh / total_generation) * 100
                 if share > threshold_pct:
-                    above_threshold.append((record.fuel_type, share))
+                    above_threshold.append((entry.fuel_type, share))
 
         # Sort by share descending
         above_threshold.sort(key=lambda x: x[1], reverse=True)
         return [fuel_type for fuel_type, _ in above_threshold]
 
-    def _calculate_totals_by_fuel_type(self, records: list[GenerationRecord]) -> Dict[str, float]:
-        """Aggregate generation TWh by fuel type for a list of records."""
+    def _calculate_totals_by_fuel_type(self, data: list[GenerationData]) -> Dict[str, float]:
+        """Aggregate generation TWh by fuel type for a list of data entries."""
         totals: Dict[str, float] = {}
-        for record in records:
-            if record.generation_twh is not None:
-                totals[record.fuel_type] = totals.get(record.fuel_type, 0.0) + record.generation_twh
+        for entry in data:
+            if entry.generation_twh is not None:
+                totals[entry.fuel_type] = totals.get(entry.fuel_type, 0.0) + entry.generation_twh
         return totals
 
     def fuel_type_growth_rates(self) -> Dict[str, float]:
@@ -341,15 +341,15 @@ class ElectricityStats:
 
         # Last 12 months
         start_last = self._subtract_months(latest_date, 11)
-        records_last = self._get_records_in_date_range(start_last, latest_date)
+        data_last = self._get_data_in_date_range(start_last, latest_date)
 
         # Previous 12 months
         end_previous = self._subtract_months(latest_date, 12)
         start_previous = self._subtract_months(latest_date, 23)
-        records_previous = self._get_records_in_date_range(start_previous, end_previous)
+        data_previous = self._get_data_in_date_range(start_previous, end_previous)
 
-        last_by_fuel = self._calculate_totals_by_fuel_type(records_last)
-        previous_by_fuel = self._calculate_totals_by_fuel_type(records_previous)
+        last_by_fuel = self._calculate_totals_by_fuel_type(data_last)
+        previous_by_fuel = self._calculate_totals_by_fuel_type(data_previous)
 
         # Calculate growth rates
         growth_rates: Dict[str, float] = {}
@@ -409,24 +409,24 @@ class ElectricityStats:
             return []
 
         # Current month data
-        latest_records = [r for r in self.records if r.date == latest_date]
-        latest_by_fuel = {r.fuel_type: r for r in latest_records}
+        latest_data = [d for d in self.generation_data if d.date == latest_date]
+        latest_by_fuel = {d.fuel_type: d for d in latest_data}
 
         # Date 1 year ago for monthly growth
         one_year_ago_date = self._subtract_months(latest_date, 12)
-        one_year_ago_records = [r for r in self.records if r.date == one_year_ago_date]
-        one_year_ago_by_fuel = {r.fuel_type: r for r in one_year_ago_records}
+        one_year_ago_data = [d for d in self.generation_data if d.date == one_year_ago_date]
+        one_year_ago_by_fuel = {d.fuel_type: d for d in one_year_ago_data}
 
         # Rolling 12 month data
         start_last_12 = self._subtract_months(latest_date, 11)
-        records_last_12 = self._get_records_in_date_range(start_last_12, latest_date)
+        data_last_12 = self._get_data_in_date_range(start_last_12, latest_date)
 
         start_prev_12 = self._subtract_months(latest_date, 23)
         end_prev_12 = self._subtract_months(latest_date, 12)
-        records_prev_12 = self._get_records_in_date_range(start_prev_12, end_prev_12)
+        data_prev_12 = self._get_data_in_date_range(start_prev_12, end_prev_12)
 
-        total_last_12_by_fuel = self._calculate_totals_by_fuel_type(records_last_12)
-        total_prev_12_by_fuel = self._calculate_totals_by_fuel_type(records_prev_12)
+        total_last_12_by_fuel = self._calculate_totals_by_fuel_type(data_last_12)
+        total_prev_12_by_fuel = self._calculate_totals_by_fuel_type(data_prev_12)
 
         mix_records = []
         all_fuel_types = set(latest_by_fuel.keys()) | set(total_last_12_by_fuel.keys())

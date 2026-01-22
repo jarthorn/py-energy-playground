@@ -10,8 +10,8 @@ from typing import Optional
 
 
 @dataclass
-class GenerationRecord:
-    """Represents a single monthly electricity generation record from the API."""
+class GenerationData:
+    """Represents a single monthly electricity generation entry from the API."""
 
     country: str
     country_code: str
@@ -24,20 +24,20 @@ class GenerationRecord:
     is_latest_month: bool = False
 
     @classmethod
-    def from_dict(cls, data: dict) -> GenerationRecord:
+    def from_dict(cls, data: dict) -> GenerationData:
         """
-        Create a GenerationRecord from a dictionary (typically from JSON).
+        Create a GenerationData from a dictionary (typically from JSON).
 
         Raises:
             ValueError: If date is missing or has an invalid format
         """
         date_str = data.get("date", "")
         if not date_str:
-            raise ValueError(f"Missing required 'date' field in record: {data}")
+            raise ValueError(f"Missing required 'date' field in entry: {data}")
         try:
             parsed_date = date.fromisoformat(date_str)
         except (ValueError, TypeError) as e:
-            raise ValueError(f"Invalid date format '{date_str}' in record: {data}") from e
+            raise ValueError(f"Invalid date format '{date_str}' in entry: {data}") from e
 
         return cls(
             country=data.get("entity", ""),

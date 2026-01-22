@@ -15,7 +15,7 @@ from typing import Dict, Tuple
 
 from .analysis import ElectricityStats, NewRecord
 from .country_codes import CountryCode
-from .models import GenerationRecord
+from .models import GenerationData
 
 
 class GlobalReport:
@@ -39,27 +39,27 @@ class GlobalReport:
                 continue
         return country_files
 
-    def _load_records(self, file_path: Path) -> Tuple[list[GenerationRecord], date | None]:
-        """Load records from a country data file and return (records, latest_date)."""
+    def _load_records(self, file_path: Path) -> Tuple[list[GenerationData], date | None]:
+        """Load data from a country data file and return (data, latest_date)."""
         with file_path.open("r") as f:
             content = json.load(f)
         data_list = content.get("data", [])
 
-        # Load all records (date parsing happens in GenerationRecord.from_dict)
-        records = [GenerationRecord.from_dict(record_dict) for record_dict in data_list]
+        # Load all entries (date parsing happens in GenerationData.from_dict)
+        generation_data = [GenerationData.from_dict(entry_dict) for entry_dict in data_list]
 
-        # Find the latest date from loaded records
+        # Find the latest date from loaded data
         max_date = None
-        for record in records:
-            if max_date is None or record.date > max_date:
-                max_date = record.date
+        for entry in generation_data:
+            if max_date is None or entry.date > max_date:
+                max_date = entry.date
 
-        # Update records that match the latest date
-        for record in records:
-            if record.date == max_date:
-                record.is_latest_month = True
+        # Update entries that match the latest date
+        for entry in generation_data:
+            if entry.date == max_date:
+                entry.is_latest_month = True
 
-        return records, max_date
+        return generation_data, max_date
 
     def _find_new_records(
         self, metric_attr: str

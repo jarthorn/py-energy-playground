@@ -3,7 +3,7 @@ Reads stored data from disk, runs analysis, and prints results.
 """
 
 from __future__ import annotations
-
+import textwrap
 import json
 import sys
 from pathlib import Path
@@ -12,11 +12,13 @@ from datetime import date
 
 from .analysis import ElectricityStats, CurrentFuelData
 from .country_codes import CountryCode
-from .models import GenerationRecord
+from .models import GenerationData
 
 
 class CountryReport:
     """Loads records from a file, runs analyses, and prints to stdout."""
+
+    LINE_LENGTH = 105
 
     def __init__(self, input_path: Path, country_code: CountryCode | str) -> None:
         # Convert string to CountryCode if needed
@@ -26,13 +28,13 @@ class CountryReport:
             self.country_code = country_code
         self.input_path = Path(input_path)
 
-    def _load_records(self) -> Iterable[GenerationRecord]:
+    def _load_records(self) -> Iterable[GenerationData]:
         with self.input_path.open("r") as f:
             content = json.load(f)
         data_list = content.get("data", [])
 
-        # Load all records first (date parsing happens in GenerationRecord.from_dict)
-        records = [GenerationRecord.from_dict(record_dict) for record_dict in data_list]
+        # Load all records first (date parsing happens in GenerationData.from_dict)
+        records = [GenerationData.from_dict(record_dict) for record_dict in data_list]
 
         # Find the latest date from loaded records
         max_date = None
@@ -74,7 +76,7 @@ class CountryReport:
                     content = json.load(f)
                 data_list = content.get("data", [])
                 records = [
-                    GenerationRecord.from_dict(record_dict) for record_dict in data_list
+                    GenerationData.from_dict(record_dict) for record_dict in data_list
                 ]
 
                 stats = ElectricityStats(records)
@@ -106,9 +108,9 @@ class CountryReport:
             return f"{self.country_code.value}: No data available."
 
         # Get country name from first record if available
-        records_list = list(stats.records)
+        generation_data_list = list(stats.generation_data)
         country_name = (
-            records_list[0].country if records_list else self.country_code.value
+            generation_data_list[0].country if generation_data_list else self.country_code.value
         )
 
         # Global rank
@@ -171,13 +173,11 @@ class CountryReport:
 
     @staticmethod
     def _print_peak_table(
-        peak_months: Dict[str, GenerationRecord], title: str, value_label: str, metric_attr: str
+        peak_months: Dict[str, GenerationData], title: str, value_label: str, metric_attr: str
     ) -> None:
-        print("\n" + "=" * 70)
-        print(title)
-        print("=" * 70)
+        CountryReport._print_title(title)
         print(f"{'Fuel Type':<45} | {'Month':<12} | {value_label:>16}")
-        print("-" * 70)
+        print("-" * CountryReport.LINE_LENGTH)
         for fuel_type, record in sorted(peak_months.items()):
             value = getattr(record, metric_attr, None)
             if value is not None:
@@ -194,10 +194,7 @@ class CountryReport:
             return
 
         date_str = latest_date.strftime("%b %Y") if latest_date else "Latest Month"
-
-        print("\n" + "=" * 105)
-        print(f"Energy Mix Snapshot: {date_str}")
-        print("=" * 105)
+        CountryReport._print_title(f"Energy Mix Snapshot: {date_str}")
 
         # Headers
         headers = [
@@ -213,7 +210,7 @@ class CountryReport:
             f"{headers[0]:<20} | {headers[1]:>14} | {headers[2]:>10} | "
             f"{headers[3]:>14} | {headers[4]:>14} | {headers[5]:>14}"
         )
-        print("-" * 105)
+        print("-" * CountryReport.LINE_LENGTH)
 
         for rec in mix_records:
             mth_growth_str = f"{rec.growth_current_month:+.1f}" if rec.growth_current_month is not None else "-"
@@ -227,6 +224,11 @@ class CountryReport:
                 f"{rec.gen_last_12_months:>14.2f} | "
                 f"{gen_12m_growth_str:>14}"
             )
+    @staticmethod
+    def _print_title(title: str) -> None:
+        print("\n" + "=" * CountryReport.LINE_LENGTH)
+        print(title)
+        print("=" * CountryReport.LINE_LENGTH)
 
     def run(self) -> None:
         records = self._load_records()
@@ -234,7 +236,8 @@ class CountryReport:
 
         # Print opening paragraph
         opening_paragraph = self._generate_opening_paragraph(stats)
-        print(opening_paragraph)
+        self._print_title("Country Overview")
+        print(textwrap.fill(opening_paragraph, CountryReport.LINE_LENGTH))
         print()
 
         # Energy Mix Snapshot

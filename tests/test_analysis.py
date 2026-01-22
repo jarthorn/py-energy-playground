@@ -3,7 +3,7 @@ Unit tests for ElectricityStats using the bundled Canada sample dataset.
 """
 
 from emberstats.analysis import ElectricityStats
-from emberstats.models import GenerationRecord
+from emberstats.models import GenerationData
 import unittest
 from datetime import date
 from pathlib import Path
@@ -22,7 +22,7 @@ def load_sample_records():
     with open(sample_path, "r") as f:
         content = json.load(f)
     data_list = content.get("data", [])
-    return [GenerationRecord.from_dict(record_dict) for record_dict in data_list]
+    return [GenerationData.from_dict(record_dict) for record_dict in data_list]
 
 
 class TestElectricityStats(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestElectricityStats(unittest.TestCase):
         peaks = self.stats.peak_months_by_series("share_of_generation_pct")
 
         # Spot-check a few expected peaks from the sample file
-        # Verify that peaks returns GenerationRecord objects
+        # Verify that peaks returns GenerationData objects
         self.assertIn("Hydro", peaks)
         hydro_record = peaks["Hydro"]
         self.assertEqual(hydro_record.date, date(2021, 1, 1))
@@ -58,7 +58,7 @@ class TestElectricityStats(unittest.TestCase):
         peaks = self.stats.peak_months_by_series("generation_twh")
 
         # Spot-check a few expected peaks from the sample file
-        # Verify that peaks returns GenerationRecord objects
+        # Verify that peaks returns GenerationData objects
         self.assertIn("Hydro", peaks)
         hydro_record = peaks["Hydro"]
         self.assertEqual(hydro_record.date, date(2022, 1, 1))
