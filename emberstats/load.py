@@ -92,6 +92,7 @@ def fetch_and_store_all(start_date: str = "2000-01", is_aggregate_series: bool =
 
 
 if __name__ == "__main__":
+    country_code = CountryCode.CAN
     if len(sys.argv) > 1:
         arg = sys.argv[1].upper()
         if arg == "ALL":

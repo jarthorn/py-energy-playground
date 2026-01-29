@@ -119,34 +119,43 @@ class GlobalReport:
         else:
             self._print_new_records_table(all_records, title, unit_label)
 
+    def _generate_tweet_text(
+        self, record: NewRecord, unit_label: str
+    ) -> str | None:
+        """Generate tweet text for a record. Returns None if record should be skipped."""
+        # Fuel types to skip
+        SKIP_FUEL_TYPES = {"Other fossil", "Other renewables", "Net imports"}
+
+        if record.fuel_type in SKIP_FUEL_TYPES:
+            return None
+
+        # Clean unit label (remove parens) and add leading space if needed
+        units = unit_label.replace("(", "").replace(")", "")
+        units = " " + units if units != "%" else units
+        metric_name = "generation share" if "%" in unit_label else "total generation"
+
+        date_obj = date.fromisoformat(record.date)
+        date_str = date_obj.strftime("%B %Y")
+
+        prev_date_str = "unknown date"
+        if record.previous_peak_date:
+            prev_date_obj = date.fromisoformat(record.previous_peak_date)
+            prev_date_str = prev_date_obj.strftime("%B %Y")
+
+        return (
+            f"In {date_str}, {record.country_name} hit a new electricity record for {metric_name} "
+            f"of {record.value}{units} in {record.fuel_type.lower()} power. "
+            f"This exceeds the previous peak of {record.previous_peak}{units} set in {prev_date_str}."
+        )
+
     def _print_new_records_tweet(
         self, all_records: list[NewRecord], unit_label: str
     ) -> None:
         """Print new records in tweet format."""
-        # Clean unit label (remove parens)
-        units = unit_label.replace("(", "").replace(")", "")
-        metric_name = "generation share" if "%" in unit_label else "total generation"
-
-        # Fuel types to skip
-        SKIP_FUEL_TYPES = {"Other fossil", "Other renewables", "Net imports"}
-
         for record in all_records:
-            if record.fuel_type in SKIP_FUEL_TYPES:
-                continue
-
-            date_obj = date.fromisoformat(record.date)
-            date_str = date_obj.strftime("%B %Y")
-
-            prev_date_str = "unknown date"
-            if record.previous_peak_date:
-                prev_date_obj = date.fromisoformat(record.previous_peak_date)
-                prev_date_str = prev_date_obj.strftime("%B %Y")
-
-            print(
-                f"In {date_str} {record.country_name} hit a new electricity record for {metric_name} "
-                f"of {record.value} {units} in {record.fuel_type.lower()} power. "
-                f"This exceeds the previous peak of {record.previous_peak} set in {prev_date_str}."
-            )
+            tweet_text = self._generate_tweet_text(record, unit_label)
+            if tweet_text:
+                print(tweet_text)
 
     def _print_new_records_csv(
         self, all_records: list[NewRecord], title: str, unit_label: str
@@ -163,9 +172,11 @@ class GlobalReport:
             "Date",
             f"New Record {unit_label}",
             f"Previous Peak {unit_label}",
-            "Previous Date"
+            "Previous Date",
+            "Tweet"
         ])
         for record in all_records:
+            tweet_text = self._generate_tweet_text(record, unit_label)
             writer.writerow(
                 [
                     record.fuel_type,
@@ -174,6 +185,7 @@ class GlobalReport:
                     f"{record.value:.2f}",
                     f"{record.previous_peak:.2f}",
                     record.previous_peak_date or "N/A",
+                    tweet_text or "",
                 ]
             )
 
