@@ -109,8 +109,7 @@ class GlobalReport:
         for fuel_type, records in new_records_by_fuel.items():
             all_records.extend(records)
 
-        # Sort by fuel type
-        all_records.sort(key=lambda x: x.fuel_type)
+        all_records.sort(key=lambda x: (x.date, x.country_name))
 
         if self.output_format == "csv":
             self._print_new_records_csv(all_records, title, unit_label)
