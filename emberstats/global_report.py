@@ -124,7 +124,6 @@ class GlobalReport:
         """Generate tweet text for a record. Returns None if record should be skipped."""
         # Fuel types to skip
         SKIP_FUEL_TYPES = {"Other fossil", "Other renewables", "Net imports"}
-
         if record.fuel_type in SKIP_FUEL_TYPES:
             return None
 
@@ -142,7 +141,7 @@ class GlobalReport:
             prev_date_str = prev_date_obj.strftime("%B %Y")
 
         return (
-            f"In {date_str}, {record.country_name} hit a new electricity record for {metric_name} "
+            f"In {date_str}, {record.country_name} hit a new monthly electricity record for {metric_name} "
             f"of {record.value}{units} in {record.fuel_type.lower()} power. "
             f"This exceeds the previous peak of {record.previous_peak}{units} set in {prev_date_str}."
         )
