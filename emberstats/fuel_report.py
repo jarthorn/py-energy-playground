@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
-from .analysis import ElectricityStats, YearlyAggregation
+from .analysis import CountryAggregation, ElectricityStats, YearlyAggregation
 from .models import GenerationData
 
 
@@ -74,6 +74,22 @@ class FuelReport:
 
             prev_gen = agg.generation_twh
 
+    def print_top_countries(self, top_countries: list[CountryAggregation], fuel_type: str) -> None:
+        """Print the top countries report table."""
+        print("\n" + "=" * 60)
+        print(f"Top 10 Countries for: {fuel_type}")
+        print("=" * 60)
+
+        headers = ["Country", "Generation (TWh)"]
+        print(f"{headers[0]:<40} | {headers[1]:>17}")
+        print("-" * 60)
+
+        for agg in top_countries:
+            print(
+                f"{agg.country:<40} | "
+                f"{agg.total_twh:>17,.2f}"
+            )
+
     def run(self, fuel_type: str) -> None:
         stats = ElectricityStats(self.load_all_data())
 
@@ -84,6 +100,10 @@ class FuelReport:
             return
 
         self.print_report(aggregated, fuel_type)
+
+        top_countries = stats.top_countries_by_fuel_type(fuel_type)
+        if top_countries:
+            self.print_top_countries(top_countries, fuel_type)
 
 
 def main() -> None:

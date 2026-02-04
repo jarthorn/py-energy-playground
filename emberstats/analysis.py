@@ -47,6 +47,15 @@ class YearlyAggregation:
     is_partial: bool
 
 
+@dataclass
+class CountryAggregation:
+    """Aggregated generation data for a specific country over a time period."""
+
+    country: str
+    total_twh: float
+
+
+
 class ElectricityStats:
     """Encapsulates analysis over monthly electricity generation data."""
 
@@ -482,3 +491,59 @@ class ElectricityStats:
         # Sort by share descending
         mix_records.sort(key=lambda x: x.share_current_month, reverse=True)
         return mix_records
+
+    def top_countries_by_fuel_type(
+        self, fuel_type: str, limit: int = 10
+    ) -> list[CountryAggregation]:
+        """
+        Get top countries by generation for a fuel type (last 12 months per country).
+
+        For each country, finds the most recent date of data available and sums
+        the generation for the 12 months leading up to that date.
+
+        Args:
+            fuel_type: The fuel type to analyze (case-insensitive)
+            limit: Maximum number of countries to return
+
+        Returns:
+            List of CountryAggregation objects sorted by total generation descending.
+        """
+        fuel_type_lower = fuel_type.lower()
+
+        # Group by country
+        by_country: Dict[str, list[GenerationData]] = {}
+        for entry in self.generation_data:
+             if not entry.fuel_type or entry.fuel_type.lower() != fuel_type_lower:
+                 continue
+
+             # Group by country name
+             if entry.country not in by_country:
+                 by_country[entry.country] = []
+             by_country[entry.country].append(entry)
+
+        results = []
+        for country, records in by_country.items():
+            if not records:
+                continue
+
+            # Find latest date for this country
+            max_date = max(r.date for r in records)
+
+            # Calculate start date (11 months before max_date to get 12 month window inclusive)
+            start_date = self._subtract_months(max_date, 11)
+
+            # Sum generation in range
+            total_gen = sum(
+                r.generation_twh
+                for r in records
+                if r.generation_twh is not None and start_date <= r.date <= max_date
+            )
+
+            results.append(CountryAggregation(
+                country=country,
+                total_twh=total_gen
+            ))
+
+        # Sort by total gen descending and take top N
+        results.sort(key=lambda x: x.total_twh, reverse=True)
+        return results[:limit]
