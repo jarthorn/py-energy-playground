@@ -526,13 +526,9 @@ class ElectricityStats:
             if not records:
                 continue
 
-            # Find latest date for this country
+            # Sum latest 12 months of generation for this country
             max_date = max(r.date for r in records)
-
-            # Calculate start date (11 months before max_date to get 12 month window inclusive)
             start_date = self._subtract_months(max_date, 11)
-
-            # Sum generation in range
             total_gen = sum(
                 r.generation_twh
                 for r in records
