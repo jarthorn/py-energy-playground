@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional
 
 
 @dataclass
@@ -19,8 +18,8 @@ class GenerationData:
     date: date
     fuel_type: str
     is_aggregate_series: bool
-    generation_twh: Optional[float]
-    share_of_generation_pct: Optional[float]
+    generation_twh: float
+    share_of_generation_pct: float
     is_latest_month: bool = False
 
     @classmethod
