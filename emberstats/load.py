@@ -25,7 +25,7 @@ class Load:
     def __init__(
         self,
         country_code: CountryCode = CountryCode.CAN,
-        start_date: str = "2000-01",
+        start_date: str = "2015-01",
         base_url: str = "https://api.ember-energy.org",
         is_aggregate_series: bool = False,
     ) -> None:
