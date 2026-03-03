@@ -5,6 +5,29 @@ Country code constants for the Ember API.
 from enum import StrEnum
 
 
+# Mapping from ISO 3166-1 alpha-3 to alpha-2 codes for supported countries
+ALPHA3_TO_ALPHA2 = {
+    "ARG": "AR", "ARM": "AM", "AUS": "AU", "AUT": "AT", "AZE": "AZ",
+    "BEL": "BE", "BGD": "BD", "BGR": "BG", "BIH": "BA", "BLR": "BY",
+    "BOL": "BO", "BRA": "BR", "CAN": "CA", "CHE": "CH", "CHL": "CL",
+    "CHN": "CN", "COL": "CO", "CRI": "CR", "CYP": "CY", "CZE": "CZ",
+    "DEU": "DE", "DNK": "DK", "DOM": "DO", "ECU": "EC", "EGY": "EG",
+    "ESP": "ES", "EST": "EE", "FIN": "FI", "FRA": "FR", "GBR": "GB",
+    "GEO": "GE", "GRC": "GR", "HRV": "HR", "HUN": "HU", "IND": "IN",
+    "IRL": "IE", "IRN": "IR", "ITA": "IT", "JPN": "JP", "KAZ": "KZ",
+    "KEN": "KE", "KGZ": "KG", "KOR": "KR", "KWT": "KW", "LKA": "LK",
+    "LTU": "LT", "LUX": "LU", "LVA": "LV", "MAR": "MA", "MDA": "MD",
+    "MEX": "MX", "MKD": "MK", "MLT": "MT", "MMR": "MM", "MNE": "ME",
+    "MNG": "MN", "MYS": "MY", "NGA": "NG", "NLD": "NL", "NOR": "NO",
+    "NZL": "NZ", "OMN": "OM", "PAK": "PK", "PER": "PE", "PHL": "PH",
+    "POL": "PL", "PRI": "PR", "PRT": "PT", "QAT": "QA", "ROU": "RO",
+    "RUS": "RU", "SGP": "SG", "SLV": "SV", "SRB": "RS", "SVK": "SK",
+    "SVN": "SI", "SWE": "SE", "THA": "TH", "TJK": "TJ", "TUN": "TN",
+    "TUR": "TR", "TWN": "TW", "UKR": "UA", "URY": "UY", "USA": "US",
+    "VNM": "VN", "XKX": "XK", "ZAF": "ZA"
+}
+
+
 class CountryCode(StrEnum):
     """
     ISO 3166-1 alpha-3 country codes supported by the Ember API.

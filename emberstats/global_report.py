@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 from .analysis import ElectricityStats, NewRecord
-from .country_codes import CountryCode
+from .country_codes import CountryCode, ALPHA3_TO_ALPHA2
 from .models import GenerationData
 
 
@@ -148,11 +148,43 @@ class GlobalReport:
             prev_date_obj = date.fromisoformat(record.previous_peak_date)
             prev_date_str = prev_date_obj.strftime("%B %Y")
 
+        prefix = self._get_emoji_prefix(record)
+
         return (
-            f"In {date_str}, {record.country_name} hit a new monthly electricity record for {metric_name} "
+            f"{prefix}In {date_str}, {record.country_name} hit a new monthly electricity record for {metric_name} "
             f"of {record_value}{units} in {record.fuel_type.lower()} power. "
             f"This exceeds the previous peak of {record_previous_peak}{units} set in {prev_date_str}."
         )
+
+    def _get_emoji_prefix(self, record: NewRecord) -> str:
+        """Create a set of emojis to prefix the tweet."""
+        # 1. Country flag
+        country_code_3 = record.country_code.value
+        alpha2 = ALPHA3_TO_ALPHA2.get(country_code_3)
+        flag_emoji = ""
+        if alpha2:
+            # Regional Indicator Symbols start at 0x1F1E6 ('A')
+            # 'A' is 65, so 0x1F1E6 - 65 = 127397
+            flag_emoji = "".join(chr(ord(c) + 127397) for c in alpha2.upper())
+
+        # 2. Fuel type emoji
+        FUEL_EMOJIS = {
+            "Hydro": "💧",
+            "Nuclear": "⚛️",
+            "Wind": "🌬️",
+            "Solar": "☀️",
+            "Bioenergy": "🌿",
+            "Coal": "🪨",
+            "Gas": "⛽️",
+            "Other fossil": "🏭",
+            "Other renewables": "♻️",
+        }
+        fuel_emoji = FUEL_EMOJIS.get(record.fuel_type, "⚡")
+
+        # 3. Chart with upwards trend
+        chart_emoji = "📈"
+
+        return f"{flag_emoji} {fuel_emoji} {chart_emoji} "
 
     def _print_new_records_tweet(
         self, all_records: list[NewRecord], unit_label: str
