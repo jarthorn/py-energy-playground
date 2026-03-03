@@ -132,6 +132,14 @@ class GlobalReport:
         units = " " + units if units != "%" else units
         metric_name = "generation share" if "%" in unit_label else "total generation"
 
+        #Convert TWh to GWh if below 1.0
+        record_value = record.value
+        record_previous_peak = record.previous_peak
+        if record_value < 1.0 and units == " TWh":
+            record_value = record_value * 1000.0
+            record_previous_peak = record_previous_peak * 1000.0
+            units = " GWh"
+
         date_obj = date.fromisoformat(record.date)
         date_str = date_obj.strftime("%B %Y")
 
@@ -142,8 +150,8 @@ class GlobalReport:
 
         return (
             f"In {date_str}, {record.country_name} hit a new monthly electricity record for {metric_name} "
-            f"of {record.value}{units} in {record.fuel_type.lower()} power. "
-            f"This exceeds the previous peak of {record.previous_peak}{units} set in {prev_date_str}."
+            f"of {record_value}{units} in {record.fuel_type.lower()} power. "
+            f"This exceeds the previous peak of {record_previous_peak}{units} set in {prev_date_str}."
         )
 
     def _print_new_records_tweet(
