@@ -15,6 +15,7 @@ import requests
 
 from .country_codes import CountryCode
 
+DEFAULT_START_DATE = "2025-01"
 
 class Load:
     """
@@ -25,7 +26,7 @@ class Load:
     def __init__(
         self,
         country_code: CountryCode = CountryCode.CAN,
-        start_date: str = "2015-01",
+        start_date: str = DEFAULT_START_DATE,
         base_url: str = "https://api.ember-energy.org",
         is_aggregate_series: bool = False,
     ) -> None:
@@ -66,12 +67,12 @@ class Load:
         return self.store(data, output_path)
 
 
-def fetch_and_store_all(start_date: str = "2015-01", is_aggregate_series: bool = False) -> None:
+def fetch_and_store_all(start_date: str = DEFAULT_START_DATE, is_aggregate_series: bool = False) -> None:
     """
     Fetch and store data for all country codes.
 
     Args:
-        start_date: Start date for the data query (default: "2015-01")
+        start_date: Start date for the data query
         is_aggregate_series: Whether to include aggregate series (default: False)
     """
     print(f"Loading data for all {len(CountryCode)} countries...")
@@ -108,7 +109,7 @@ if __name__ == "__main__":
                 sys.exit(1)
     load = Load(
         country_code=country_code,
-        start_date="2015-01",
+        start_date=DEFAULT_START_DATE,
         is_aggregate_series=False,
     )
     load.fetch_and_store(Path(f"data/{country_code.value.lower()}-monthly-generation.json"))
