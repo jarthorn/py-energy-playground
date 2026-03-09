@@ -15,7 +15,7 @@ import requests
 
 from .country_codes import CountryCode
 
-DEFAULT_START_DATE = "2025-01"
+DEFAULT_START_DATE = "2015-01"
 
 class Load:
     """
@@ -93,23 +93,41 @@ def fetch_and_store_all(start_date: str = DEFAULT_START_DATE, is_aggregate_serie
 
 
 if __name__ == "__main__":
-    country_code = CountryCode.CAN
-    if len(sys.argv) > 1:
-        arg = sys.argv[1].upper()
-        if arg == "ALL":
-            fetch_and_store_all()
-            sys.exit(0)
+    args = sys.argv[1:]
+
+    country_arg = None
+    start_date_arg = DEFAULT_START_DATE
+
+    for arg in args:
+        if arg.startswith("--country="):
+            country_arg = arg.split("=", 1)[1].upper()
+        elif arg.startswith("--start_date="):
+            start_date_arg = arg.split("=", 1)[1]
         else:
-            try:
-                country_code = CountryCode(arg)
-            except ValueError:
-                print(f"Error: Invalid country code '{sys.argv[1]}'.")
-                print("Please use a valid ISO 3166-1 alpha-3 country code (e.g., CAN, USA, ESP).")
-                print("Use 'ALL' to load data for all countries.")
-                sys.exit(1)
+            print(f"Error: Unknown or malformed argument '{arg}'.")
+            print("Usage: python -m emberstats.load --country=CAN --start_date=2020-01")
+            print("       python -m emberstats.load --country=ALL --start_date=2015-01")
+            print("Supported arguments are --country=<ISO3 code|ALL> and --start_date=YYYY-MM.")
+            sys.exit(1)
+
+    if country_arg is None:
+        country_arg = CountryCode.CAN.value
+
+    if country_arg == "ALL":
+        fetch_and_store_all(start_date=start_date_arg)
+        sys.exit(0)
+
+    try:
+        country_code = CountryCode(country_arg)
+    except ValueError:
+        print(f"Error: Invalid country code '{country_arg}'.")
+        print("Please use a valid ISO 3166-1 alpha-3 country code (e.g., CAN, USA, ESP).")
+        print("Use 'ALL' to load data for all countries.")
+        sys.exit(1)
+
     load = Load(
         country_code=country_code,
-        start_date=DEFAULT_START_DATE,
+        start_date=start_date_arg,
         is_aggregate_series=False,
     )
     load.fetch_and_store(Path(f"data/{country_code.value.lower()}-monthly-generation.json"))
