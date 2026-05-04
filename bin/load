@@ -1,0 +1,3 @@
+#!/bin/bash
+
+uv run python -m emberstats.load --country=ALL --start_date=2015-01
