@@ -17,6 +17,7 @@ from .country_codes import CountryCode
 
 DEFAULT_START_DATE = "2015-01"
 
+
 class Load:
     """
     Fetches monthly electricity generation data from the Ember API
@@ -50,7 +51,6 @@ class Load:
 
     def fetch(self) -> Dict[str, Any]:
         url = self._build_url()
-        print("Fetching data from:", url)
         response = requests.get(url, timeout=30)
         response.raise_for_status()
         return response.json()
@@ -63,8 +63,23 @@ class Load:
         return output_path
 
     def fetch_and_store(self, output_path: Path) -> Path:
+        output_path = Path(output_path)
+        before_lines = _count_lines(output_path)
         data = self.fetch()
-        return self.store(data, output_path)
+        self.store(data, output_path)
+        after_lines = _count_lines(output_path)
+        added = after_lines - before_lines
+        if added > 0:
+            print(f"{self.country_code.value}: {added} new lines")
+        return output_path
+
+
+def _count_lines(path: Path) -> int:
+    """Return the number of lines in ``path``, or 0 if it does not exist."""
+    if not path.exists():
+        return 0
+    with path.open("r") as f:
+        return sum(1 for _ in f)
 
 
 def fetch_and_store_all(start_date: str = DEFAULT_START_DATE, is_aggregate_series: bool = False) -> None:
