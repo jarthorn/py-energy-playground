@@ -1,0 +1,133 @@
+PROJECTION: INCREMENTAL ONTARIO ELECTRICITY DEMAND IF ALL HOUSEHOLDS SWITCH TO
+HEAT PUMPS BY 2050 (vs. the IESO baseline of 6.3% of households)
+===============================================================================
+
+Question: How much additional electricity would Ontario need in 2050 if EVERY
+household used a heat pump for space + water heating, instead of the IESO 2025/
+2026 Annual Planning Outlook reference assumption that only ~6.3% of households
+do?
+
+Headline result (base case):
+  ~18-19 TWh per year of INCREMENTAL electricity demand
+  (full 100% conversion of today's residential gas heating = ~19.6 TWh;
+   subtracting the 6.3% already electrified in the baseline = ~18.4 TWh).
+
+Plausible range (see sensitivity below): ~14 TWh to ~33 TWh per year.
+
+For context, the IESO 2026 APO reference forecast puts total provincial net
+demand at ~250 TWh and the entire residential sector at ~59 TWh in 2050. So this
+single change would add roughly 7-8% to total provincial demand and would be on
+the order of +30% on top of the residential sector forecast.
+
+Output data table: heatpump-2050-projection.csv
+Model script:      bin/heatpump_projection.py
+
+
+-------------------------------------------------------------------------------
+METHOD
+-------------------------------------------------------------------------------
+Delivered / useful-energy basis, applied separately to space and water heating:
+
+    useful_heat    = gas_energy_thermal x gas_appliance_efficiency
+    hp_electricity = useful_heat / heat_pump_seasonal_COP
+
+Incremental over baseline = hp_electricity x (1 - 0.063).
+
+Natural-gas energy is taken directly from Statistics Canada deliveries reported
+in gigajoules (GJ), which are on a higher-heating-value (HHV) basis. Furnace AFUE
+and water-heater energy factors are also defined on an HHV basis, so the two are
+consistent and NO separate heating-value (MJ/m3) assumption is required.
+
+
+-------------------------------------------------------------------------------
+DATA SOURCES
+-------------------------------------------------------------------------------
+1. Residential natural gas consumption -- Statistics Canada Table 25-10-0059-01
+   ("Canadian monthly natural gas distribution"), Ontario, "Deliveries to
+   residential consumers." Annual totals (derived in
+   ontario-residential-natgas-by-year.csv):
+       2023: 82.9 TWh   2024: 79.2 TWh   2025: 90.5 TWh
+       10-yr (2016-2025) average: 87.7 TWh thermal  <-- base-case input
+   (Cross-check: Canada Energy Regulator reports Ontario residential gas use of
+   ~0.7 Bcf/d in 2023, i.e. ~7.2 billion m3/yr ~ 83 TWh -- consistent.)
+
+2. Households / gas-heating share -- Natural Resources Canada (2021): Ontario had
+   ~5.72 million households, of which ~4.05 million (70.9%) heat primarily with
+   natural gas. StatCan reports ~3.6 million residential gas customer accounts
+   (2024). Heat-pump share today is ~2.5% of households (IESO).
+
+3. Heat-pump efficiency -- ENERGY STAR Most Efficient 2025 cold-climate criteria
+   (HSPF2 >= 8.5; COP >= 1.75 at 5 degF). Best current cold-climate models reach
+   HSPF2 ~10-14 (~COP 2.9-4.1 at rating conditions); realistic seasonal COP in
+   Ontario's climate today is ~2.5-3.0.
+
+4. Baseline / context -- IESO 2025 & 2026 Annual Planning Outlook (6.3% household
+   heat-pump adoption by 2050; ~250 TWh total and ~59 TWh residential in 2050).
+
+5. 2050 population/households -- Ontario Ministry of Finance projections
+   (16.1M in 2024 -> ~20.5M by 2051).
+
+
+-------------------------------------------------------------------------------
+KEY ASSUMPTIONS (and how to change them)
+-------------------------------------------------------------------------------
+A. ALL residential natural gas is space or water heating. (Per the request.
+   In reality a few % is cooking/other, so this slightly overstates heating.)
+
+B. Base-case gas load = 87.7 TWh thermal/yr (10-year average, to normalize for
+   weather). Using a single recent year would give 79-91 TWh.
+
+C. Space : water split of residential gas = 70 : 30.
+
+D. Average existing gas-appliance efficiency:
+       Space (furnace AFUE) = 0.85   (stock blend of mid- + high-efficiency)
+       Water (energy factor) = 0.63  (typical storage gas water heater)
+   -> blended useful-heat fraction ~0.78; useful heat ~68.8 TWh.
+
+E. 2050 cold-climate heat-pump SEASONAL COP = 3.5 (base case). This deliberately
+   EXCEEDS today's best realistic seasonal COP (~3.0), per the request that 2050
+   average efficiency surpass the present maximum. Sensitivity run over 2.5-4.5.
+   (Same COP applied to space and water; heat-pump water heaters today already
+   achieve COP ~3-3.5, so this is reasonable for both.)
+
+F. Incremental-over-baseline treats the IESO 6.3% household heat-pump share as
+   6.3% of the heating load already electrified, so incremental = 93.7% of the
+   full-conversion electricity. (Minor effect: ~1 TWh.)
+
+G. "Current gas load" basis holds residential heating demand at today's level.
+   A second "scaled to 2050 households" basis multiplies by projected household
+   growth (~1.26x, from population growth) to approximate a larger 2050 housing
+   stock. This does NOT assume any change in per-home heating intensity (e.g.,
+   better building envelopes, which would lower it).
+
+
+-------------------------------------------------------------------------------
+RESULTS (TWh of incremental electricity per year, 2050)
+-------------------------------------------------------------------------------
+Basis = today's gas-heating load held constant:
+   Seasonal COP:        2.5    3.0    3.5    4.0    4.5
+   Full conversion:    27.5   22.9   19.6   17.2   15.3
+   Incremental (vs 6.3%):25.8  21.5   18.4   16.1   14.3
+
+Basis = scaled to projected 2050 household count (~1.26x):
+   Seasonal COP:        2.5    3.0    3.5    4.0    4.5
+   Full conversion:    34.7   28.9   24.8   21.7   19.3
+   Incremental (vs 6.3%):32.5  27.1   23.2   20.3   18.1
+
+Base case (current load, COP 3.5): ~18.4 TWh/yr incremental.
+
+
+-------------------------------------------------------------------------------
+IMPORTANT CAVEATS
+-------------------------------------------------------------------------------
+- ENERGY ONLY, not peak/capacity. Full heating electrification would raise the
+  WINTER PEAK substantially more than these annual-energy figures suggest,
+  because heat-pump efficiency falls and heating load spikes on the coldest days
+  (often with electric-resistance backup). Peak impact would need an hourly model.
+- No allowance for building-envelope improvements, demand response, hybrid
+  (gas-backup) heat pumps, or behavioural change -- each of which would lower the
+  result. Conversely, very cold snaps with resistance backup would raise it.
+- Uses delivered/seasonal-average efficiencies; a true bottom-up model would use
+  temperature-dependent COP curves against Ontario's hourly climate.
+- The 6.3% baseline is a share of households; mapping it onto the gas-energy load
+  is an approximation.

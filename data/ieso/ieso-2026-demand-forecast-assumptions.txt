@@ -1,0 +1,196 @@
+MAJOR KNOWN ASSUMPTIONS IN THE IESO'S MOST RECENT ONTARIO DEMAND FORECAST
+===========================================================================
+
+Source: IESO 2025 Annual Planning Outlook (APO), published April 2025, covering
+the outlook period 2026-2050 (reference year 2025). This is the most recent
+long-term provincial demand forecast and is the basis for the total and peak
+energy demand figures in ieso-2026-demand-forecast.txt. Supplementary detail is
+drawn from the IESO's July 2025 demand-side technical papers (Electric Vehicles;
+Space Heating Electrification; Large Step Loads) and, for demographics, the
+Ontario Ministry of Finance population projections (Summer 2025), which the IESO
+relies on as a demographic input.
+
+Note on scope: The APO presents a Reference (most-likely) forecast plus a
+High-Demand Scenario and Low-Demand Scenario that "bookend" plausible outcomes.
+Unless stated otherwise, the figures below are from the Reference forecast.
+The APO does not speculate on future policy: it only incorporates changes that
+are expected to result from the latest economic data, committed government
+policy, or announced actions. Forecast inputs were finalized in mid-2024, so
+later developments (e.g., U.S. tariff threats, the new 2025-2036 eDSM targets)
+are NOT reflected and will be captured in future outlooks.
+
+
+-------------------------------------------------------------------------------
+1. HEADLINE FORECAST ASSUMPTIONS
+-------------------------------------------------------------------------------
+- System-level net annual energy demand grows from ~151 TWh (2025) / 157 TWh
+  (2026) to 262 TWh in 2050 -- a 75% increase, vs. the 60% increase forecast in
+  the 2024 APO. Compound annual growth rate (CAGR): ~2.2%.
+- Net summer peak: grows from ~24 GW (2026) to ~36 GW (2050); +48%, CAGR ~1.7%.
+- Net winter peak: grows comparably, producing a dual-peaking system (summer and
+  winter peaks of similar magnitude) from ~2030 onward.
+- Key growth drivers assumed: industrial EV production / supply-chain step loads;
+  AI/cloud data centres; broad economy-wide electrification; and higher
+  population growth and household formation.
+- Growth-tempering assumptions: higher energy-efficiency (eDSM) program savings,
+  softer agricultural-greenhouse growth, higher cost of living, and elevated
+  economic uncertainty.
+- General macro assumptions: stable electricity rates, and rising natural gas
+  rates (including rising GHG/carbon costs over the outlook), which make
+  electrification relatively more attractive.
+
+
+-------------------------------------------------------------------------------
+2. POPULATION GROWTH
+-------------------------------------------------------------------------------
+- The APO uses standard demographic projections (Ontario Ministry of Finance) as
+  a core driver but does not publish a single headline population number in the
+  main report. The reference (medium-growth) demographic basis is:
+    * Ontario population ~16.1 million (mid-2024) growing to >20.5 million by
+      2051 -- an increase of ~4.4 million, or +27.4% over 27 years.
+    * Low-growth demographic scenario: ~18.1 million by 2051 (+12.2%, +2.0M).
+    * High-growth demographic scenario: ~23.2 million by 2051 (+43.7%, +7.0M).
+- Population growth is assumed to be driven mainly by national immigration policy,
+  tempered by interprovincial out-migration.
+- The 2025 APO assumes HIGHER population growth and household formation than the
+  2024 APO -- a key reason demand growth was revised upward (60% -> 75%).
+- Demographics (population change, geographic migration, household type shares)
+  are explicitly flagged as a source of forecast uncertainty.
+
+
+-------------------------------------------------------------------------------
+3. HOUSEHOLDS / RESIDENTIAL SECTOR
+-------------------------------------------------------------------------------
+- Household count forecasts were updated upward and assume increased
+  concentration of homes in urban areas, notably the Toronto and Ottawa zones.
+- Continued new-home construction is assumed, supported by a favourable
+  provincial housing-supply policy environment.
+- Persisting full- and hybrid work-from-home trends are assumed, raising daytime
+  household occupancy and therefore residential electricity use.
+- Continued growth in adoption of electronic appliances/devices.
+- Toronto Green Standard v6 (planned 2028) is assumed to require near-zero-
+  emissions buildings constructed in Toronto from 2030 -- pushing electrification
+  in new residential (and commercial) construction.
+- Residential building-type shares were re-calibrated.
+- Overall residential net annual energy demand: 51 TWh (2026) -> 63 TWh (2050),
+  +25%, CAGR ~0.9%.
+
+
+-------------------------------------------------------------------------------
+4. HEAT PUMPS -- SPACE AND WATER HEATING ELECTRIFICATION (GREEN TECH)
+-------------------------------------------------------------------------------
+- Heat pumps are treated as the MAIN technology for electrifying residential and
+  commercial space heating and domestic hot water heating.
+- Space + domestic hot water heating represents >60% of total residential and
+  commercial energy use, so its electrification is one of the largest sources of
+  long-term demand uncertainty.
+- Heat pump adoption is assumed to remain MODEST in the Reference forecast:
+  rising from ~2.5% of households today to ~6.3% of households by 2050.
+- This modest adoption assumes incentive programs that have concluded or are
+  winding down, specifically:
+    * Canada Greener Homes Grant (concluded)
+    * Ontario Clean Home Heating Initiative (concluded)
+  with continued (smaller) uptake driven by:
+    * Toronto Green Standard
+    * "natural" market uptake / equipment replacement
+    * Canada Greener Homes Affordability program
+    * Natural Resources Canada Oil-to-Heat-Pump Affordability program
+- Heat pumps are assumed to consume less energy than traditional electric-
+  resistance heating.
+- Key acknowledged uncertainties around heat pumps:
+    * Pace of adoption,
+    * Variability in heat-pump operation (cold-climate performance and
+      temperature-dependent coefficient of performance), and
+    * Government policy.
+- Electrified heating is assumed to increase WINTER load especially, making the
+  system more weather/climate sensitive; if non-AC households adopt heat pumps,
+  summer load also rises.
+
+
+-------------------------------------------------------------------------------
+5. ELECTRIC VEHICLES -- LIGHT-DUTY (GREEN TECH)
+-------------------------------------------------------------------------------
+- Starting point: >200,000 EVs registered in Ontario by end-2024 (~2% of all
+  vehicles); ~400,000 light-duty EVs assumed in 2025.
+- The Reference forecast aligns EV adoption with federal Electric Vehicle
+  Availability Standard regulations (published Dec 2023), assuming zero-emission
+  vehicles reach the following share of NEW light-duty vehicle sales:
+    * >=20% in 2026
+    * >=60% in 2030
+    * 100% in 2035
+- Light-duty EV stock assumed to grow from ~400,000 (2025) to ~8.1 million (2040)
+  to ~11.5 million (2050). (The EV technical paper cites ~11.6 million total EVs
+  by 2050.)
+- Adoption is assumed to be reinforced by policy measures, improved technology,
+  matured production, and shifting consumer preference away from internal-
+  combustion vehicles.
+- A "slow adoption" alternative (technical paper, NOT the APO Reference) assumes
+  only ~75% of light-duty sales are battery-electric by 2035, delaying the 100%
+  milestone by ~8 years (to ~2043).
+
+
+-------------------------------------------------------------------------------
+6. ELECTRIC VEHICLES -- MEDIUM- AND HEAVY-DUTY (GREEN TECH)
+-------------------------------------------------------------------------------
+- Medium- and heavy-duty vehicles (>4,536 kg) are currently <3% of total
+  provincial vehicles.
+- Battery-electric adoption in this segment is assumed to LAG light-duty EVs,
+  reaching ~90,000 units by 2050 -- about 23% of total medium-/heavy-duty
+  vehicles.
+- Aligns with federal targets for a subset of medium-/heavy-duty vehicles to be
+  zero-emission by 2040.
+- No electricity demand is assumed for non-battery decarbonization technologies
+  (hydrogen fuel cell, catenary/overhead, bio-based diesel, etc.); their future
+  market shares are treated as uncertain.
+- Electrification of this segment is assumed to be more challenging because these
+  vehicles are operated almost exclusively for business with diverse, demanding
+  usage patterns.
+
+
+-------------------------------------------------------------------------------
+7. EV CHARGING ASSUMPTIONS
+-------------------------------------------------------------------------------
+- Total EV charging demand assumed to exceed 42 TWh/year by 2050 (~a sixty-fold
+  increase over the period) -- about 16% of total provincial electricity
+  consumption, making EV charging the single LARGEST electricity end use by 2050.
+- The transportation sector overall grows from ~3 TWh (2026) to ~44 TWh (2050)
+  (+1,382%, CAGR ~11.9%), the fastest-growing sector, also including rail/transit
+  electrification (GO rail, LRT, subway projects).
+- A MODELLED charging profile assuming continued charging-management initiatives
+  is used; charging behaviour is highly uncertain and influenced by rate
+  structures (e.g., Ultra-Low Overnight rates) and managed-charging programs.
+- Winter EV battery charging combined with winter electric space heating is a key
+  driver of the shift toward winter-evening/overnight peaks and flatter daily
+  load profiles.
+- Active/managed EV charging is assumed to be increasingly necessary long-term to
+  avoid large incremental capacity (peak) needs.
+
+
+-------------------------------------------------------------------------------
+8. OTHER RELEVANT ELECTRIFICATION / DEMAND DRIVERS
+-------------------------------------------------------------------------------
+- Industrial EV production & supply chain (e.g., Honda Alliston EV assembly +
+  battery plant; LG/Stellantis Windsor; Volkswagen St. Thomas) drive large
+  industrial "step loads."
+- Commercial data centres (AI/cloud) grow from ~3 TWh (2026) to ~16 TWh (2050)
+  (+423%, CAGR ~7.1%) -- a major but highly uncertain new load.
+- Industrial decarbonization: steel electrification (Algoma, ArcelorMittal
+  Dofasco electric arc furnaces), mining electrification, battery-materials and
+  hydrogen production.
+- Energy efficiency / demand-side management (eDSM) assumed to offset some growth
+  (note: the larger 2025-2036 eDSM targets are NOT yet reflected).
+
+
+-------------------------------------------------------------------------------
+9. KEY CAVEATS ON ASSUMPTIONS
+-------------------------------------------------------------------------------
+- Forecast inputs finalized mid-2024; excludes later events (U.S. tariffs, new
+  eDSM targets, newer policy).
+- Only committed/announced policy and projects are included; the APO does not
+  speculate on future policy changes.
+- Uncertainty grows with the length of the outlook; the largest sources of
+  demand uncertainty are: space/water heating electrification (heat pumps), EV
+  adoption & charging, large step loads (data centres + EV supply chain), the
+  economy, demographics, fuel costs, technology, and climate change.
+- Figures are on a normal-weather, net-demand basis (gross demand minus
+  conservation; net minus embedded generation = grid demand).

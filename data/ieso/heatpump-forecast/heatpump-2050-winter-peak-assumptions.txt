@@ -1,0 +1,110 @@
+PROJECTION: INCREMENTAL ONTARIO WINTER PEAK (CAPACITY) IF ALL HOUSEHOLDS SWITCH
+TO HEAT PUMPS BY 2050
+===============================================================================
+
+Companion to the annual-ENERGY analysis (heatpump-2050-projection*). This one
+estimates the incremental WINTER PEAK electricity demand (GW) from converting all
+Ontario residential natural-gas space + water heating to cold-climate heat pumps.
+
+Per request, 2050 household scaling is FIXED at 1.26x, and the spread is taken
+over a TEMPERATURE / weather basis: the 10-year average, minimum, and maximum of
+Ontario residential gas consumption. Two heat-pump COP variants are reported:
+  * seasonal COP 3.5  -- seasonal-average efficiency (optimistic at the peak hour)
+  * cold-day COP 2.0  -- assumed 2050 efficiency at the winter design temperature,
+                         reflecting progress over current cold-climate units
+                         (which are nearer ~1.5 on the coldest days)
+
+Headline result (incremental winter peak added, over the 6.3% baseline):
+                         seasonal COP 3.5     cold-day COP 2.0
+  10-yr minimum gas year:    ~7.2 GW              ~12.6 GW
+  10-yr average gas year:    ~8.0 GW              ~14.0 GW
+  10-yr maximum gas year:    ~8.7 GW              ~15.2 GW
+
+For context, the IESO reference 2050 WINTER peak is ~35.1 GW. So this adds roughly
+20-25% on top of the reference winter peak at seasonal COP, rising to ~36-43% at
+the more realistic cold-day COP 2.0 (the IESO high-demand 2050 winter peak is
+~41.8 GW -- i.e. the cold-day variant alone is comparable to the entire
+reference-to-high-demand gap).
+
+Output table: heatpump-2050-winter-peak.csv
+Model script: bin/heatpump_peak_projection.py
+
+
+-------------------------------------------------------------------------------
+METHOD (degree-day / design-temperature)
+-------------------------------------------------------------------------------
+Only SPACE heating is weather-driven and sets the peak. Its annual energy is
+proportional to heating degree-days; its peak power occurs at the winter design
+(coldest) temperature:
+
+    E_space  = U_agg * HDD18 * 24            (U_agg = aggregate GW per degC)
+    P_space  = U_agg * (T_indoor - T_design)
+    =>  P_space[GW] = E_space[GWh] * (T_indoor - T_design) / (HDD18 * 24)
+
+Electricity peak = P_space / COP.
+
+WATER heating is treated as weather-independent and contributes ~its average
+electric power at the system peak (water_peak_factor = 1.0).
+
+Total incremental peak = (space + water electric peak) x (1 - 0.063 baseline).
+
+
+-------------------------------------------------------------------------------
+INPUTS
+-------------------------------------------------------------------------------
+Gas basis (StatCan 25-10-0059, Ontario residential, from
+ontario-residential-natgas-by-year.csv), TWh thermal/yr:
+    10-yr average = 87.7   |  minimum = 79.2 (2024)  |  maximum = 95.5 (2019)
+  scaled x1.26 to 2050 households -> 110.5 / 99.8 / 120.4 TWh.
+
+Heating split / efficiencies (same as energy model):
+    space 70% @ AFUE 0.85 ;  water 30% @ EF 0.63.
+
+Climate (Ontario, population-weighted):
+    HDD18 = 3700  (Env. Canada normals: Toronto 3434, Ottawa 4477)
+    T_indoor / balance = 18 degC  (consistent with HDD base)
+    T_design = -19 degC  (Ontario Building Code SB-1 Jan 2.5%: Toronto -18,
+                          Ottawa -24, population-weighted ~ -19)
+    => design delta-T = 37 degC; implied ~2370 effective full-load heating hours.
+
+Heat-pump COP variants = 3.5 (seasonal) and 2.0 (cold-day at design temperature).
+Baseline = 6.3% households already on HPs.
+Context peak (IESO reference 2050 winter peak) = 35.1 GW.
+
+
+-------------------------------------------------------------------------------
+RESULTS (incremental winter peak, GW)
+-------------------------------------------------------------------------------
+COP variant       basis        gas2050  space(th)  space(el)  water(el)  TOTAL  incr  %IESO wpk
+seasonal_cop_3.5  10yr_average  110.5     27.4       7.8        0.7       8.5    8.0    22.7%
+seasonal_cop_3.5  10yr_minimum   99.8     24.7       7.1        0.6       7.7    7.2    20.5%
+seasonal_cop_3.5  10yr_maximum  120.4     29.8       8.5        0.7       9.3    8.7    24.7%
+cold_day_cop_2.0  10yr_average  110.5     27.4      13.7        1.2      14.9   14.0    39.8%
+cold_day_cop_2.0  10yr_minimum   99.8     24.7      12.4        1.1      13.5   12.6    35.9%
+cold_day_cop_2.0  10yr_maximum  120.4     29.8      14.9        1.3      16.2   15.2    43.3%
+
+
+-------------------------------------------------------------------------------
+WHY TWO COP VARIANTS (cold-weather efficiency risk)
+-------------------------------------------------------------------------------
+The seasonal COP of 3.5 is a YEAR-AVERAGE value; the winter system peak occurs on
+the coldest hour, when a heat pump's instantaneous COP is much lower. The cold-day
+COP 2.0 variant captures this: it assumes the 2050 fleet performs at COP ~2.0 at
+the -19 degC design temperature -- an improvement over today's cold-climate units
+(nearer ~1.5 on the coldest days). The cold-day variant roughly DOUBLES the peak
+impact (to ~14 GW on the average basis).
+
+Even COP 2.0 may be optimistic at the extreme: below their balance point, heat
+pumps commonly fall back to electric RESISTANCE (COP 1.0). For reference, at
+resistance the space-heating peak alone would be ~27.4 GW (10-yr average basis).
+A full peak/capacity study should use a temperature-dependent COP curve with a
+resistance-backup balance point against Ontario's coldest design hour; the COP 2.0
+figures here are a reasonable mid-point, not a floor.
+
+Other caveats:
+- Population-weighted single-zone climate (no zonal/coldest-region detail).
+- No demand response, thermal storage, hybrid (gas-backup) heat pumps, or
+  building-envelope improvements -- all of which would reduce the peak.
+- Water-heating peak coincidence assumed ~average (factor 1.0); storage HPWHs
+  buffer demand, but a higher coincidence factor would raise the total modestly.
+- Energy-model space:water split and gas efficiencies carried over unchanged.

@@ -1,0 +1,11 @@
+basis,gas_energy_twh_thermal,seasonal_cop,useful_heat_twh,elec_full_conversion_twh,elec_incremental_over_6.3pct_baseline_twh
+current_gas_load,87.72,2.5,68.77,27.51,25.78
+current_gas_load,87.72,3.0,68.77,22.92,21.48
+current_gas_load,87.72,3.5,68.77,19.65,18.41
+current_gas_load,87.72,4.0,68.77,17.19,16.11
+current_gas_load,87.72,4.5,68.77,15.28,14.32
+scaled_to_2050_households,110.6,2.5,86.71,34.69,32.5
+scaled_to_2050_households,110.6,3.0,86.71,28.9,27.08
+scaled_to_2050_households,110.6,3.5,86.71,24.78,23.21
+scaled_to_2050_households,110.6,4.0,86.71,21.68,20.31
+scaled_to_2050_households,110.6,4.5,86.71,19.27,18.06
