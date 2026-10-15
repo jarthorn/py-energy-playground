@@ -208,6 +208,7 @@ __marimo__/
 
 # Data exports
 data/*.json
+data/ev-charging-norway/*.csv
 
 # Generated reports
 output/

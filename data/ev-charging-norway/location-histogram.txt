@@ -1,0 +1,14 @@
+# Histogram of how many records exist per location
+
+OSL_S 9757
+OSL_T 5478
+OSL_1 464
+OSL_2 127
+TRO_R 6706
+TRO 2168
+ASK 6372
+BAR 1969
+BAR_2 1028
+BOD 508
+KRO 492
+BER 308
