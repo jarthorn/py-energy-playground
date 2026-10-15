@@ -10,8 +10,10 @@ from pathlib import Path
 from typing import Dict, Iterable, Optional
 from datetime import date
 
+from . import DATA_DIR
 from .analysis import ElectricityStats, CurrentFuelData
 from .country_codes import CountryCode
+from .load import data_path_for
 from .models import GenerationData
 
 
@@ -50,9 +52,7 @@ class CountryReport:
         return gen_data
 
     @staticmethod
-    def _calculate_global_rank(
-        country_code: CountryCode, total_twh: float, data_dir: Path
-    ) -> Optional[int]:
+    def _calculate_global_rank(country_code: CountryCode, total_twh: float, data_dir: Path) -> Optional[int]:
         """
         Calculate global rank for a country based on total generation in last 12 months.
 
@@ -75,9 +75,7 @@ class CountryReport:
                 with file_path.open("r") as f:
                     content = json.load(f)
                 data_list = content.get("data", [])
-                records = [
-                    GenerationData.from_dict(record_dict) for record_dict in data_list
-                ]
+                records = [GenerationData.from_dict(record_dict) for record_dict in data_list]
 
                 stats = ElectricityStats(records)
                 country_total, _ = stats.total_generation_last_12_months()
@@ -109,14 +107,10 @@ class CountryReport:
 
         # Get country name from first record if available
         generation_data_list = list(stats.generation_data)
-        country_name = (
-            generation_data_list[0].country if generation_data_list else self.country_code.value
-        )
+        country_name = generation_data_list[0].country if generation_data_list else self.country_code.value
 
         # Global rank
-        project_root = Path(__file__).parent.parent
-        data_dir = project_root / "data"
-        global_rank = self._calculate_global_rank(self.country_code, total_twh, data_dir)
+        global_rank = self._calculate_global_rank(self.country_code, total_twh, DATA_DIR)
         rank_text = f"ranked {global_rank}" if global_rank else "not ranked"
 
         # Growth rate
@@ -138,9 +132,7 @@ class CountryReport:
             elif len(major_fuel_types) == 2:
                 fuel_types_text = f"{major_fuel_types[0]} and {major_fuel_types[1]}"
             else:
-                fuel_types_text = (
-                    ", ".join(major_fuel_types[:-1]) + f", and {major_fuel_types[-1]}"
-                )
+                fuel_types_text = ", ".join(major_fuel_types[:-1]) + f", and {major_fuel_types[-1]}"
         else:
             fuel_types_text = "none (all below 10%)"
 
@@ -187,9 +179,7 @@ class CountryReport:
                 print(f"{fuel_type:<45} | {date_str:<12} | {value:>15.2f}")
 
     @staticmethod
-    def _print_energy_mix_table(
-        mix_records: list["CurrentFuelData"], latest_date: Optional[date]
-    ) -> None:
+    def _print_energy_mix_table(mix_records: list["CurrentFuelData"], latest_date: Optional[date]) -> None:
         if not mix_records:
             return
 
@@ -197,14 +187,7 @@ class CountryReport:
         CountryReport._print_title(f"Energy Mix Snapshot: {date_str}")
 
         # Headers
-        headers = [
-            "Fuel Type",
-            "Mth Gen (TWh)",
-            "Share (%)",
-            "Mth Growth (%)",
-            "12M Gen (TWh)",
-            "12M Growth (%)"
-        ]
+        headers = ["Fuel Type", "Mth Gen (TWh)", "Share (%)", "Mth Growth (%)", "12M Gen (TWh)", "12M Growth (%)"]
 
         print(
             f"{headers[0]:<20} | {headers[1]:>14} | {headers[2]:>10} | "
@@ -224,6 +207,7 @@ class CountryReport:
                 f"{rec.gen_last_12_months:>14.2f} | "
                 f"{gen_12m_growth_str:>14}"
             )
+
     @staticmethod
     def _print_title(title: str) -> None:
         print("\n" + "=" * CountryReport.LINE_LENGTH)
@@ -262,18 +246,19 @@ class CountryReport:
             metric_attr="generation_twh",
         )
 
+
 def main(country_code: CountryCode) -> None:
-    project_root = Path(__file__).parent.parent
-    data_path = project_root / "data" / f"{country_code.value.lower()}-monthly-generation.json"
+    data_path = data_path_for(country_code)
 
     if not data_path.exists():
         print(f"Error: Data file not found: {data_path}")
         print(f"Please run the load program first to fetch data for {country_code.value}:")
-        print(f"  uv run python -m emberstats.load {country_code.value}")
+        print(f"  uv run python -m emberstats.load --country={country_code.value}")
         sys.exit(1)
 
     reporter = CountryReport(data_path, country_code)
     reporter.run()
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

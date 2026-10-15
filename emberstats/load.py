@@ -13,9 +13,15 @@ from dotenv import load_dotenv
 
 import requests
 
+from . import DATA_DIR
 from .country_codes import CountryCode
 
 DEFAULT_START_DATE = "2015-01"
+
+
+def data_path_for(country_code: CountryCode) -> Path:
+    """Return the on-disk path for one country's monthly generation JSON."""
+    return DATA_DIR / f"{country_code.value.lower()}-monthly-generation.json"
 
 
 class Load:
@@ -99,8 +105,7 @@ def fetch_and_store_all(start_date: str = DEFAULT_START_DATE, is_aggregate_serie
                 start_date=start_date,
                 is_aggregate_series=is_aggregate_series,
             )
-            output_path = Path(f"data/{country_code.value.lower()}-monthly-generation.json")
-            load.fetch_and_store(output_path)
+            load.fetch_and_store(data_path_for(country_code))
             print(f"✓ Successfully loaded data for {country_code.value}")
         except Exception as e:
             print(f"✗ Failed to load data for {country_code.value}: {e}")
@@ -145,4 +150,4 @@ if __name__ == "__main__":
         start_date=start_date_arg,
         is_aggregate_series=False,
     )
-    load.fetch_and_store(Path(f"data/{country_code.value.lower()}-monthly-generation.json"))
+    load.fetch_and_store(data_path_for(country_code))

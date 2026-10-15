@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
+from . import DATA_DIR
 from .analysis import CountryAggregation, ElectricityStats, YearlyAggregation
 from .models import GenerationData
 
@@ -33,10 +34,7 @@ class FuelReport:
                     continue
 
                 # Load entries
-                country_data = [
-                    GenerationData.from_dict(entry_dict)
-                    for entry_dict in data_list
-                ]
+                country_data = [GenerationData.from_dict(entry_dict) for entry_dict in data_list]
                 all_data.extend(country_data)
             except Exception as e:
                 print(f"Warning: Failed to load {file_path.name}: {e}", file=sys.stderr)
@@ -66,11 +64,7 @@ class FuelReport:
             if agg.is_partial:
                 gen_str += "*"
 
-            print(
-                f"{agg.year:<6} | "
-                f"{gen_str:>18} | "
-                f"{growth_str:>16}"
-            )
+            print(f"{agg.year:<6} | {gen_str:>18} | {growth_str:>16}")
 
             prev_gen = agg.generation_twh
 
@@ -85,10 +79,7 @@ class FuelReport:
         print("-" * 60)
 
         for agg in top_countries:
-            print(
-                f"{agg.country:<40} | "
-                f"{agg.total_twh:>17,.2f}"
-            )
+            print(f"{agg.country:<40} | {agg.total_twh:>17,.2f}")
 
     def run(self, fuel_type: str) -> None:
         stats = ElectricityStats(self.load_all_data())
@@ -115,14 +106,11 @@ def main() -> None:
 
     fuel_type = sys.argv[1]
 
-    project_root = Path(__file__).parent.parent
-    data_dir = project_root / "data"
-
-    if not data_dir.exists():
-        print(f"Error: Data directory not found: {data_dir}")
+    if not DATA_DIR.exists():
+        print(f"Error: Data directory not found: {DATA_DIR}")
         sys.exit(1)
 
-    reporter = FuelReport(data_dir)
+    reporter = FuelReport(DATA_DIR)
     reporter.run(fuel_type)
 
 

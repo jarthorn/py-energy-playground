@@ -26,6 +26,7 @@ class NewRecord:
     previous_peak: float
     previous_peak_date: Optional[str]
 
+
 @dataclass
 class CurrentFuelData:
     """Statistics for a fuel type in the energy mix table."""
@@ -53,7 +54,6 @@ class CountryAggregation:
 
     country: str
     total_twh: float
-
 
 
 class ElectricityStats:
@@ -99,11 +99,7 @@ class ElectricityStats:
             unique_months = set(r.date.month for r in year_records)
             is_partial = len(unique_months) < 12
 
-            results.append(YearlyAggregation(
-                year=year,
-                generation_twh=total_gen,
-                is_partial=is_partial
-            ))
+            results.append(YearlyAggregation(year=year, generation_twh=total_gen, is_partial=is_partial))
 
         return results
 
@@ -175,12 +171,8 @@ class ElectricityStats:
                 continue
 
             previous_peak_entry = peaks_before.get(latest_entry.fuel_type)
-            previous_peak_value = (
-                getattr(previous_peak_entry, metric_attr, None) if previous_peak_entry else None
-            )
-            previous_peak_date = (
-                previous_peak_entry.date.isoformat() if previous_peak_entry else None
-            )
+            previous_peak_value = getattr(previous_peak_entry, metric_attr, None) if previous_peak_entry else None
+            previous_peak_date = previous_peak_entry.date.isoformat() if previous_peak_entry else None
 
             # If no previous peak or latest value exceeds previous peak
             if previous_peak_value is None or value > previous_peak_value:
@@ -224,15 +216,9 @@ class ElectricityStats:
             year -= 1
         return date(year, month, 1)
 
-    def _get_data_in_date_range(
-        self, start_date: date, end_date: date
-    ) -> list[GenerationData]:
+    def _get_data_in_date_range(self, start_date: date, end_date: date) -> list[GenerationData]:
         """Get data entries within a date range (inclusive)."""
-        return [
-            entry
-            for entry in self.generation_data
-            if start_date <= entry.date <= end_date
-        ]
+        return [entry for entry in self.generation_data if start_date <= entry.date <= end_date]
 
     def total_generation_last_12_months(self) -> Tuple[float, Optional[date]]:
         """
@@ -248,11 +234,7 @@ class ElectricityStats:
         start_date = self._subtract_months(latest_date, 11)
 
         data_12_months = self._get_data_in_date_range(start_date, latest_date)
-        total = sum(
-            entry.generation_twh
-            for entry in data_12_months
-            if entry.generation_twh is not None
-        )
+        total = sum(entry.generation_twh for entry in data_12_months if entry.generation_twh is not None)
 
         return (total, latest_date)
 
@@ -270,11 +252,7 @@ class ElectricityStats:
         start_date = self._subtract_months(latest_date, 23)
         end_date = self._subtract_months(latest_date, 12)
         data_previous = self._get_data_in_date_range(start_date, end_date)
-        total = sum(
-            entry.generation_twh
-            for entry in data_previous
-            if entry.generation_twh is not None
-        )
+        total = sum(entry.generation_twh for entry in data_previous if entry.generation_twh is not None)
 
         return total
 
@@ -312,11 +290,7 @@ class ElectricityStats:
         latest_data = [d for d in self.generation_data if d.date == latest_date]
 
         # Calculate total generation for the month
-        total_generation = sum(
-            entry.generation_twh
-            for entry in latest_data
-            if entry.generation_twh is not None
-        )
+        total_generation = sum(entry.generation_twh for entry in latest_data if entry.generation_twh is not None)
 
         if total_generation == 0:
             return []
@@ -448,11 +422,7 @@ class ElectricityStats:
         for fuel_type in all_fuel_types:
             # Current Month Stats
             current_rec = latest_by_fuel.get(fuel_type)
-            gen_current = (
-                current_rec.generation_twh
-                if current_rec and current_rec.generation_twh is not None
-                else 0.0
-            )
+            gen_current = current_rec.generation_twh if current_rec and current_rec.generation_twh is not None else 0.0
             share_current = (
                 current_rec.share_of_generation_pct
                 if current_rec and current_rec.share_of_generation_pct is not None
@@ -462,9 +432,7 @@ class ElectricityStats:
             # Monthly Growth
             prev_year_rec = one_year_ago_by_fuel.get(fuel_type)
             gen_prev_year = (
-                prev_year_rec.generation_twh
-                if prev_year_rec and prev_year_rec.generation_twh is not None
-                else 0.0
+                prev_year_rec.generation_twh if prev_year_rec and prev_year_rec.generation_twh is not None else 0.0
             )
 
             growth_current = None
@@ -479,22 +447,22 @@ class ElectricityStats:
             if gen_prev_12 > 0:
                 growth_last_12 = ((gen_last_12 - gen_prev_12) / gen_prev_12) * 100
 
-            mix_records.append(CurrentFuelData(
-                fuel_type=fuel_type,
-                gen_current_month=gen_current,
-                share_current_month=share_current,
-                growth_current_month=growth_current,
-                gen_last_12_months=gen_last_12,
-                growth_last_12_months=growth_last_12
-            ))
+            mix_records.append(
+                CurrentFuelData(
+                    fuel_type=fuel_type,
+                    gen_current_month=gen_current,
+                    share_current_month=share_current,
+                    growth_current_month=growth_current,
+                    gen_last_12_months=gen_last_12,
+                    growth_last_12_months=growth_last_12,
+                )
+            )
 
         # Sort by share descending
         mix_records.sort(key=lambda x: x.share_current_month, reverse=True)
         return mix_records
 
-    def top_countries_by_fuel_type(
-        self, fuel_type: str, limit: int = 10
-    ) -> list[CountryAggregation]:
+    def top_countries_by_fuel_type(self, fuel_type: str, limit: int = 10) -> list[CountryAggregation]:
         """
         Get top countries by generation for a fuel type (last 12 months per country).
 
@@ -513,13 +481,13 @@ class ElectricityStats:
         # Group by country
         by_country: Dict[str, list[GenerationData]] = {}
         for entry in self.generation_data:
-             if not entry.fuel_type or entry.fuel_type.lower() != fuel_type_lower:
-                 continue
+            if not entry.fuel_type or entry.fuel_type.lower() != fuel_type_lower:
+                continue
 
-             # Group by country name
-             if entry.country not in by_country:
-                 by_country[entry.country] = []
-             by_country[entry.country].append(entry)
+            # Group by country name
+            if entry.country not in by_country:
+                by_country[entry.country] = []
+            by_country[entry.country].append(entry)
 
         results = []
         for country, records in by_country.items():
@@ -530,15 +498,10 @@ class ElectricityStats:
             max_date = max(r.date for r in records)
             start_date = self._subtract_months(max_date, 11)
             total_gen = sum(
-                r.generation_twh
-                for r in records
-                if r.generation_twh is not None and start_date <= r.date <= max_date
+                r.generation_twh for r in records if r.generation_twh is not None and start_date <= r.date <= max_date
             )
 
-            results.append(CountryAggregation(
-                country=country,
-                total_twh=total_gen
-            ))
+            results.append(CountryAggregation(country=country, total_twh=total_gen))
 
         # Sort by total gen descending and take top N
         results.sort(key=lambda x: x.total_twh, reverse=True)

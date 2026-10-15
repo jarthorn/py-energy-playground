@@ -1,10 +1,8 @@
 import sys
-from pathlib import Path
-
 
 from .country_codes import CountryCode
 from .country_report import CountryReport
-from .load import Load
+from .load import Load, data_path_for
 
 
 def main(country_code: CountryCode | str):
@@ -18,8 +16,7 @@ def main(country_code: CountryCode | str):
     if isinstance(country_code, str):
         country_code = CountryCode(country_code.upper())
 
-    project_root = Path(__file__).parent.parent
-    data_path = project_root / "data" / f"{country_code.value.lower()}-monthly-generation.json"
+    data_path = data_path_for(country_code)
 
     # Fetch fresh data from the API and store it locally
     loader = Load(
