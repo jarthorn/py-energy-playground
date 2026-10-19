@@ -211,6 +211,7 @@ data/*.json
 data/emberstats/*.json
 data/ev-charging-mtl/*.csv
 data/ev-charging-norway/*.csv
+data/ev-charging-us/*.csv
 
 # Generated reports
 output/
