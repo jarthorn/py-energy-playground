@@ -7,7 +7,9 @@ This folder contains data from the EV Watts public database.
 
 | File | Description |
 | --- | --- |
-| `evwatts.public.session.csv` | EV charging sessions (plug-in/out times, energy charged, locations) |
+| `evwatts.public.session.csv` | Large table of fully anonymized EV charging sessions (plug-in/out times, energy charged, locations) |
+| `evwatts.public.vehicles.csv` | Metadata about vehices in the "vehiclesessions" table |
+| `evwatts.public.vehiclesessions.csv` | A smaller dataset of EV charging sessions correlated to specific vehicles |
 
 ## EV charging datasets (Zenodo)
 
