@@ -42,7 +42,8 @@ def session(
 
 def vehicle(**overrides):
     defaults = dict(
-        electrification_level="BEV (Battery Electric Vehicle)",
+        vehicle_type="CAR",
+        electrification_level="BEV",
         ownership="Fleet",
         state="Colorado",
     )
@@ -92,6 +93,8 @@ class TestAggregateVehicle(unittest.TestCase):
         self.assertEqual(agg.weeks_without_sessions, 1)
         self.assertEqual(agg.state, "Oregon")
         self.assertEqual(agg.ownership, "Fleet")
+        self.assertEqual(agg.vehicle_type, "CAR")
+        self.assertEqual(agg.electrification_level, "BEV")
 
     def test_missing_duration_counts_for_weeks_only(self):
         sessions = [
@@ -177,6 +180,48 @@ class TestAggregateVehicle(unittest.TestCase):
         self.assertIsNotNone(date_only)
         assert date_only is not None
         self.assertEqual(date_only.plugin, datetime(2022, 4, 1, 0, 0, 0))
+
+
+class TestLabelMaps(unittest.TestCase):
+    def test_known_vehicle_types(self):
+        self.assertEqual(
+            mod.remap_label("PASSENGER CAR", mod.VEHICLE_TYPE_MAP, "vehicle_type", "1"),
+            "CAR",
+        )
+        self.assertEqual(
+            mod.remap_label(
+                "MULTIPURPOSE PASSENGER VEHICLE (MPV)",
+                mod.VEHICLE_TYPE_MAP,
+                "vehicle_type",
+                "1",
+            ),
+            "MPV",
+        )
+        self.assertEqual(mod.remap_label("BUS", mod.VEHICLE_TYPE_MAP, "vehicle_type", "1"), "BUS")
+
+    def test_known_electrification_levels(self):
+        self.assertEqual(
+            mod.remap_label(
+                "BEV (Battery Electric Vehicle)",
+                mod.ELECTRIFICATION_LEVEL_MAP,
+                "electrification_level",
+                "1",
+            ),
+            "BEV",
+        )
+        self.assertEqual(
+            mod.remap_label(
+                "PHEV (Plug-in Hybrid Electric Vehicle)",
+                mod.ELECTRIFICATION_LEVEL_MAP,
+                "electrification_level",
+                "1",
+            ),
+            "PHEV",
+        )
+
+    def test_unknown_label_fails(self):
+        with self.assertRaises(SystemExit):
+            mod.remap_label("TRUCK", mod.VEHICLE_TYPE_MAP, "vehicle_type", "9")
 
 
 if __name__ == "__main__":

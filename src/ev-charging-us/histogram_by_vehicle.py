@@ -35,17 +35,30 @@ OUTPUT_COLUMNS = (
     "total_energy_charged",
     "weeks_with_sessions",
     "weeks_without_sessions",
+    "vehicle_type",
     "electrification_level",
     "ownership",
     "state",
 )
 
 SESSION_REQUIRED = ("id", "vehicle_id", "start_datetime", "duration", "energy_kwh")
-VEHICLE_REQUIRED = ("id", "electrification_level", "ownership", "state")
+VEHICLE_REQUIRED = ("id", "vehicle_type", "electrification_level", "ownership", "state")
+
+VEHICLE_TYPE_MAP = {
+    "PASSENGER CAR": "CAR",
+    "MULTIPURPOSE PASSENGER VEHICLE (MPV)": "MPV",
+    "BUS": "BUS",
+}
+
+ELECTRIFICATION_LEVEL_MAP = {
+    "BEV (Battery Electric Vehicle)": "BEV",
+    "PHEV (Plug-in Hybrid Electric Vehicle)": "PHEV",
+}
 
 
 @dataclass(frozen=True)
 class Vehicle:
+    vehicle_type: str
     electrification_level: str
     ownership: str
     state: str
@@ -72,6 +85,7 @@ class VehicleAggregate:
     total_energy_charged: float
     weeks_with_sessions: int
     weeks_without_sessions: int
+    vehicle_type: str
     electrification_level: str
     ownership: str
     state: str
@@ -105,6 +119,14 @@ def parse_float(value: str) -> float | None:
         return float(value)
     except ValueError:
         return None
+
+
+def remap_label(value: str, mapping: dict[str, str], field: str, vehicle_id: str) -> str:
+    if value not in mapping:
+        raise SystemExit(
+            f"Unexpected {field} {value!r} for vehicle_id {vehicle_id!r}; expected one of {sorted(mapping)}"
+        )
+    return mapping[value]
 
 
 def format_number(value: float, decimals: int = 6) -> str:
@@ -156,7 +178,18 @@ def load_vehicles(path: Path) -> dict[str, Vehicle]:
             if vehicle_id in vehicles:
                 raise SystemExit(f"{path}:{row_num}: duplicate vehicle id {vehicle_id!r}")
             vehicles[vehicle_id] = Vehicle(
-                electrification_level=row[field_map["electrification_level"]].strip(),
+                vehicle_type=remap_label(
+                    row[field_map["vehicle_type"]].strip(),
+                    VEHICLE_TYPE_MAP,
+                    "vehicle_type",
+                    vehicle_id,
+                ),
+                electrification_level=remap_label(
+                    row[field_map["electrification_level"]].strip(),
+                    ELECTRIFICATION_LEVEL_MAP,
+                    "electrification_level",
+                    vehicle_id,
+                ),
                 ownership=row[field_map["ownership"]].strip(),
                 state=row[field_map["state"]].strip(),
             )
@@ -179,6 +212,7 @@ def aggregate_vehicle(vehicle_id: str, sessions: list[Session], vehicle: Vehicle
         total_energy_charged=sum(s.energy_kwh or 0.0 for s in complete),
         weeks_with_sessions=weeks_with,
         weeks_without_sessions=weeks_without,
+        vehicle_type=vehicle.vehicle_type,
         electrification_level=vehicle.electrification_level,
         ownership=vehicle.ownership,
         state=vehicle.state,
@@ -193,6 +227,7 @@ def aggregate_to_row(agg: VehicleAggregate) -> dict[str, str]:
         "total_energy_charged": format_number(agg.total_energy_charged),
         "weeks_with_sessions": str(agg.weeks_with_sessions),
         "weeks_without_sessions": str(agg.weeks_without_sessions),
+        "vehicle_type": agg.vehicle_type,
         "electrification_level": agg.electrification_level,
         "ownership": agg.ownership,
         "state": agg.state,
