@@ -1,16 +1,15 @@
-"""Hourly onshore wind generation for one balancing authority.
+"""Hourly onshore wind generation summed by balancing authority.
 
 Joins extant onshore wind nameplate capacity with grid-cell balancing
-authorities, then multiplies each site's nameplate by its hourly capacity
-factor. The result is one CSV: rows are hours 1–8760, columns are grid cells
-in the balancing authority.
+authorities, multiplies each site's nameplate by its hourly capacity factor,
+and sums those MW values within each balancing authority. The result is one
+CSV: rows are hours 1–8760, columns are balancing authority labels.
 
 Usage:
     uv run python src/wind-capacity-on/hourly_wind_generation.py
-    uv run python src/wind-capacity-on/hourly_wind_generation.py --ba Ontario.b
 
 Writes:
-    output/wind-capacity-on_<ba>_<year>_YYYYMMDD-HHMM.csv
+    output/wind-capacity-on_by-ba_<year>_YYYYMMDD-HHMM.csv
 """
 
 from __future__ import annotations
@@ -19,6 +18,7 @@ import argparse
 import csv
 import math
 import sys
+from decimal import ROUND_HALF_UP, Decimal
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -36,7 +36,6 @@ SCRIPT_NAME = "wind-capacity-on"
 # nameplate still in service in that year.
 NAMEPLATE_YEAR = "2025"
 
-DEFAULT_BA = "Ontario.a"
 HOURS_IN_YEAR = 8760
 WIND_ONS_SUFFIX = ".wind_ons"
 SOLAR_SUFFIX = ".solar"
@@ -55,6 +54,7 @@ class DataError(Exception):
 @dataclass(frozen=True)
 class WindLocation:
     grid_cell: int
+    ba: str
     nameplate_mw: float
 
 
@@ -65,8 +65,9 @@ class LocationMismatch:
 
 
 def format_mw(value: float) -> str:
-    text = f"{value:.6f}".rstrip("0").rstrip(".")
-    return text if text else "0"
+    """Nearest whole MW. Halves round away from zero, so 0.5 becomes 1."""
+    rounded = Decimal(value).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return format(rounded, "f")
 
 
 def load_grid_cells(path: Path) -> dict[int, str]:
@@ -112,16 +113,14 @@ def parse_nameplate(value: str, location: str, year: str) -> float:
 def select_locations(
     extant_path: Path,
     gridcells_path: Path,
-    ba: str,
     year: str = NAMEPLATE_YEAR,
 ) -> tuple[list[WindLocation], list[LocationMismatch]]:
-    """Onshore wind sites in `ba` with positive nameplate in `year`.
+    """Onshore wind sites with positive nameplate in `year`, tagged with their balancing authority.
 
     A wind_ons grid cell missing from gridcells.csv is reported and skipped.
-    Sites in other balancing authorities, solar rows, and zero nameplate are omitted.
+    Solar rows and zero nameplate are omitted.
     """
     cells = load_grid_cells(gridcells_path)
-    known_bas = set(cells.values())
     mismatches: list[LocationMismatch] = []
     seen: dict[int, str] = {}
     chosen: list[WindLocation] = []
@@ -163,19 +162,16 @@ def select_locations(
                     )
                 )
                 continue
-            if cells[grid_cell] != ba or nameplate == 0:
+            if nameplate == 0:
                 continue
-            chosen.append(WindLocation(grid_cell, nameplate))
+            chosen.append(WindLocation(grid_cell, cells[grid_cell], nameplate))
 
     mismatches.sort(key=lambda item: item.grid_cell)
     chosen.sort(key=lambda item: item.grid_cell)
 
-    if ba not in known_bas:
-        known = ", ".join(sorted(known_bas))
-        raise DataError(f"Unknown balancing authority {ba!r}. Known values: {known}", mismatches)
     if not chosen:
         raise DataError(
-            f"No extant onshore wind with positive {year} nameplate capacity in {ba!r}.",
+            f"No extant onshore wind with positive {year} nameplate capacity.",
             mismatches,
         )
     return chosen, mismatches
@@ -216,10 +212,11 @@ def write_hourly_generation(
     dest: Path,
     *,
     hours_in_year: int = HOURS_IN_YEAR,
-) -> tuple[list[WindLocation], list[LocationMismatch]]:
-    """Stream windcf.csv and write MW output for the given locations.
+) -> tuple[list[str], list[LocationMismatch]]:
+    """Stream windcf.csv and write each hour's MW total for each balancing authority.
 
-    Locations with no windcf column are reported and omitted. A structural problem
+    Locations with no windcf column are reported and omitted. A balancing authority
+    is included only when at least one of its locations remains. A structural problem
     in windcf.csv (hour index, row width, non-numeric factor) aborts with no output file.
     """
     if not locations:
@@ -251,13 +248,14 @@ def write_hourly_generation(
         kept.sort(key=lambda item: item.grid_cell)
         if not kept:
             raise DataError("No selected locations are present in windcf.csv.", mismatches)
+        authorities = sorted({location.ba for location in kept})
 
         partial = dest.with_name(dest.name + ".partial")
         dest.parent.mkdir(parents=True, exist_ok=True)
         try:
             with partial.open("w", newline="", encoding="utf-8") as out_handle:
                 writer = csv.writer(out_handle)
-                writer.writerow(["h", *(str(location.grid_cell) for location in kept)])
+                writer.writerow(["h", *authorities])
                 expected_hour = 1
                 for row in reader:
                     raw_hour = row[0].strip() if row else ""
@@ -277,7 +275,7 @@ def write_hourly_generation(
                             f"{source} hour {hour} has {len(row)} columns; header has {header_width}",
                             mismatches,
                         )
-                    mw_values = []
+                    totals = dict.fromkeys(authorities, 0.0)
                     for location in kept:
                         factor = parse_capacity_factor(
                             row[columns[location.grid_cell]],
@@ -285,8 +283,8 @@ def write_hourly_generation(
                             hour=hour,
                             grid_cell=location.grid_cell,
                         )
-                        mw_values.append(format_mw(factor * location.nameplate_mw))
-                    writer.writerow([str(hour), *mw_values])
+                        totals[location.ba] += factor * location.nameplate_mw
+                    writer.writerow([str(hour), *(format_mw(totals[ba]) for ba in authorities)])
                     expected_hour += 1
                 written = expected_hour - 1
                 if written != hours_in_year:
@@ -295,13 +293,12 @@ def write_hourly_generation(
             partial.unlink(missing_ok=True)
             raise
         partial.replace(dest)
-    return kept, mismatches
+    return authorities, mismatches
 
 
-def output_path(ba: str, when: datetime | None = None) -> Path:
+def output_path(when: datetime | None = None) -> Path:
     stamp = (when or datetime.now()).strftime("%Y%m%d-%H%M")
-    slug = ba.replace(" ", "_")
-    return OUTPUT_DIR / f"{SCRIPT_NAME}_{slug}_{NAMEPLATE_YEAR}_{stamp}.csv"
+    return OUTPUT_DIR / f"{SCRIPT_NAME}_by-ba_{NAMEPLATE_YEAR}_{stamp}.csv"
 
 
 def print_mismatches(mismatches: list[LocationMismatch]) -> None:
@@ -311,34 +308,28 @@ def print_mismatches(mismatches: list[LocationMismatch]) -> None:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--ba",
-        default=DEFAULT_BA,
-        help=f"Balancing authority to include (default: {DEFAULT_BA})",
-    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = parse_args(argv)
-    ba = args.ba.strip()
-    if not ba:
-        print("Balancing authority must not be empty", file=sys.stderr)
-        return 1
+    parse_args(argv)
     try:
         for path in (DEFAULT_EXTANT, DEFAULT_GRIDCELLS, DEFAULT_WINDCF):
             if not path.is_file():
                 raise DataError(f"Input file not found: {path}")
-        locations, mismatches = select_locations(DEFAULT_EXTANT, DEFAULT_GRIDCELLS, ba, NAMEPLATE_YEAR)
+        locations, mismatches = select_locations(DEFAULT_EXTANT, DEFAULT_GRIDCELLS, NAMEPLATE_YEAR)
         print_mismatches(mismatches)
-        dest = output_path(ba)
-        kept, cf_mismatches = write_hourly_generation(DEFAULT_WINDCF, locations, dest)
+        dest = output_path()
+        authorities, cf_mismatches = write_hourly_generation(DEFAULT_WINDCF, locations, dest)
         print_mismatches(cf_mismatches)
     except DataError as exc:
         print_mismatches(exc.mismatches)
         print(str(exc), file=sys.stderr)
         return 1
-    print(f"Wrote {dest} ({HOURS_IN_YEAR} hours, {len(kept)} locations)", file=sys.stderr)
+    print(
+        f"Wrote {dest} ({HOURS_IN_YEAR} hours, {len(authorities)} balancing authorities)",
+        file=sys.stderr,
+    )
     return 0
 
 

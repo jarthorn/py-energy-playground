@@ -1,4 +1,4 @@
-"""Tests for joining extant onshore wind sites and scaling hourly capacity factors."""
+"""Tests for summing extant onshore wind generation by balancing authority."""
 
 from __future__ import annotations
 
@@ -28,6 +28,15 @@ mod = load_module()
 def write_csv(path: Path, rows: list[list[str]]) -> None:
     with path.open("w", newline="", encoding="utf-8") as handle:
         csv.writer(handle).writerows(rows)
+
+
+class TestFormatMw(unittest.TestCase):
+    def test_rounds_half_away_from_zero(self):
+        self.assertEqual(mod.format_mw(0), "0")
+        self.assertEqual(mod.format_mw(0.4), "0")
+        self.assertEqual(mod.format_mw(0.5), "1")
+        self.assertEqual(mod.format_mw(1.5), "2")
+        self.assertEqual(mod.format_mw(2), "2")
 
 
 class TestSelectLocations(unittest.TestCase):
@@ -61,18 +70,33 @@ class TestSelectLocations(unittest.TestCase):
             ],
         )
 
-    def test_keeps_positive_onshore_wind_in_the_balancing_authority(self):
-        locations, mismatches = mod.select_locations(self.extant, self.gridcells, "Ontario.a")
-        self.assertEqual(locations, [mod.WindLocation(1, 10.0)])
+    def test_keeps_positive_onshore_wind_in_every_balancing_authority(self):
+        locations, mismatches = mod.select_locations(self.extant, self.gridcells)
+        self.assertEqual(
+            locations,
+            [
+                mod.WindLocation(1, "Ontario.a", 10.0),
+                mod.WindLocation(3, "Ontario.b", 5.0),
+            ],
+        )
         self.assertEqual([item.grid_cell for item in mismatches], [5, 9])
         self.assertIn("not in gridcells.csv", mismatches[0].message)
         self.assertIn("skipping", mismatches[0].message)
 
-    def test_unknown_balancing_authority_fails_and_keeps_mismatches(self):
+    def test_all_zero_nameplate_fails_and_keeps_mismatches(self):
+        write_csv(
+            self.extant,
+            [
+                ["location", "2025"],
+                ["1.wind_ons", "0"],
+                ["3.wind_ons", "0"],
+                ["5.wind_ons", "7"],
+            ],
+        )
         with self.assertRaises(mod.DataError) as caught:
-            mod.select_locations(self.extant, self.gridcells, "Ontario.c")
-        self.assertIn("Unknown balancing authority", str(caught.exception))
-        self.assertEqual([item.grid_cell for item in caught.exception.mismatches], [5, 9])
+            mod.select_locations(self.extant, self.gridcells)
+        self.assertIn("No extant onshore wind", str(caught.exception))
+        self.assertEqual([item.grid_cell for item in caught.exception.mismatches], [5])
 
     def test_duplicate_wind_location_fails(self):
         write_csv(
@@ -84,14 +108,20 @@ class TestSelectLocations(unittest.TestCase):
             ],
         )
         with self.assertRaises(mod.DataError) as caught:
-            mod.select_locations(self.extant, self.gridcells, "Ontario.a")
+            mod.select_locations(self.extant, self.gridcells)
         self.assertIn("more than once", str(caught.exception))
 
     def test_utf8_bom_on_input_headers(self):
         for path in (self.gridcells, self.extant):
             path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
-        locations, mismatches = mod.select_locations(self.extant, self.gridcells, "Ontario.a")
-        self.assertEqual(locations, [mod.WindLocation(1, 10.0)])
+        locations, mismatches = mod.select_locations(self.extant, self.gridcells)
+        self.assertEqual(
+            locations,
+            [
+                mod.WindLocation(1, "Ontario.a", 10.0),
+                mod.WindLocation(3, "Ontario.b", 5.0),
+            ],
+        )
         self.assertEqual([item.grid_cell for item in mismatches], [5, 9])
 
     def test_unexpected_location_suffix_fails(self):
@@ -103,7 +133,7 @@ class TestSelectLocations(unittest.TestCase):
             ],
         )
         with self.assertRaises(mod.DataError) as caught:
-            mod.select_locations(self.extant, self.gridcells, "Ontario.a")
+            mod.select_locations(self.extant, self.gridcells)
         self.assertIn("neither .wind_ons nor .solar", str(caught.exception))
 
 
@@ -118,24 +148,32 @@ class TestWriteHourlyGeneration(unittest.TestCase):
             self.windcf,
             [
                 ["h", "10", "2", "99"],
-                ["1", "0.5", "0.25", "0.1"],
-                ["2", "1", "0", "0.2"],
+                ["1", "0.5", "0.25", "0.25"],
+                ["2", "1", "0", "0.5"],
             ],
         )
         self.locations = [
-            mod.WindLocation(10, 4.0),
-            mod.WindLocation(2, 10.0),
-            mod.WindLocation(50, 3.0),
+            mod.WindLocation(10, "Ontario.a", 4.0),
+            mod.WindLocation(2, "Ontario.a", 10.0),
+            mod.WindLocation(99, "Ontario.b", 8.0),
+            mod.WindLocation(50, "Alberta.a", 3.0),
         ]
 
-    def test_scales_capacity_factors_and_sorts_columns(self):
-        kept, mismatches = mod.write_hourly_generation(self.windcf, self.locations, self.dest, hours_in_year=2)
-        self.assertEqual([item.grid_cell for item in kept], [2, 10])
+    def test_sums_locations_within_each_balancing_authority(self):
+        authorities, mismatches = mod.write_hourly_generation(self.windcf, self.locations, self.dest, hours_in_year=2)
+        self.assertEqual(authorities, ["Ontario.a", "Ontario.b"])
         self.assertEqual([item.grid_cell for item in mismatches], [50])
         self.assertIn("no column for grid cell 50", mismatches[0].message)
         with self.dest.open(newline="", encoding="utf-8") as handle:
             rows = list(csv.reader(handle))
-        self.assertEqual(rows, [["h", "2", "10"], ["1", "2.5", "2"], ["2", "0", "4"]])
+        self.assertEqual(
+            rows,
+            [
+                ["h", "Ontario.a", "Ontario.b"],
+                ["1", "5", "2"],
+                ["2", "4", "4"],
+            ],
+        )
         self.assertFalse((self.root / "out.csv.partial").exists())
 
     def test_hour_gap_removes_partial_output(self):
@@ -150,7 +188,7 @@ class TestWriteHourlyGeneration(unittest.TestCase):
         with self.assertRaises(mod.DataError) as caught:
             mod.write_hourly_generation(
                 self.windcf,
-                [mod.WindLocation(2, 10.0)],
+                [mod.WindLocation(2, "Ontario.a", 10.0)],
                 self.dest,
                 hours_in_year=2,
             )
@@ -162,7 +200,7 @@ class TestWriteHourlyGeneration(unittest.TestCase):
         with self.assertRaises(mod.DataError) as caught:
             mod.write_hourly_generation(
                 self.windcf,
-                [mod.WindLocation(2, 10.0)],
+                [mod.WindLocation(2, "Ontario.a", 10.0)],
                 self.dest,
                 hours_in_year=3,
             )
@@ -178,12 +216,16 @@ class TestWriteHourlyGeneration(unittest.TestCase):
             ],
         )
         with self.assertRaises(mod.DataError) as caught:
-            mod.write_hourly_generation(self.windcf, [mod.WindLocation(2, 10.0)], self.dest, hours_in_year=1)
+            mod.write_hourly_generation(
+                self.windcf, [mod.WindLocation(2, "Ontario.a", 10.0)], self.dest, hours_in_year=1
+            )
         self.assertIn("expected a number in [0, 1]", str(caught.exception))
 
     def test_every_selected_column_missing_fails(self):
         with self.assertRaises(mod.DataError) as caught:
-            mod.write_hourly_generation(self.windcf, [mod.WindLocation(50, 3.0)], self.dest, hours_in_year=2)
+            mod.write_hourly_generation(
+                self.windcf, [mod.WindLocation(50, "Alberta.a", 3.0)], self.dest, hours_in_year=2
+            )
         self.assertIn("No selected locations", str(caught.exception))
         self.assertEqual([item.grid_cell for item in caught.exception.mismatches], [50])
         self.assertFalse(self.dest.exists())
