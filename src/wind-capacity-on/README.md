@@ -27,3 +27,14 @@ One period column (2025, 2030, …) — nameplate MW still in service that year 
 - We will need to filter out locations that we are not interested in tracking. There are many more location ids in this file than in extant_wind_solar.csv because they represent potential future wind generation sites, as well as solar generation sites.
 
 For a given hour of the year (h), the expected power output is NAMEPLATE_CAPACITY[location] x CF[h, location]
+
+# Dashboard
+
+From the repository root, build the hourly file, then open the page. The page reads the newest `output/wind-capacity-on_by-ba_2025_YYYYMMDD-HHMM.csv`. It does not recompute generation from the COPPER inputs.
+
+```bash
+uv run python src/wind-capacity-on/hourly_wind_generation.py
+uv run streamlit run src/wind-capacity-on/dashboard.py
+```
+
+Choose a balancing authority. The chart is estimated hourly megawatts for 2025 nameplate: each site's capacity factor times its nameplate, summed within the authority.
