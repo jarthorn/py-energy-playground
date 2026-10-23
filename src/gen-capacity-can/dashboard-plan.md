@@ -22,7 +22,9 @@ The dashboard reads the aggregation script’s output, not the COPPER source fil
 uv run python src/gen-capacity-can/hourly_variable_generation.py
 ```
 
-For each onshore wind site (`location` ending in `.wind_ons`) with positive 2025 nameplate, hourly megawatts are nameplate times the capacity factor in `windcf.csv`. Sites in the same balancing authority are summed. Each sum is rounded to the nearest whole MW, with halves away from zero (0.5 becomes 1). The nameplate year is the `NAMEPLATE_YEAR` constant (`"2025"`). Solar rows and zero nameplate are excluded. A `wind_ons` grid cell missing from `gridcells.csv`, or a selected cell missing from `windcf.csv`, is reported on stderr and skipped.
+For each onshore wind site (`location` ending in `.wind_ons`) with positive 2025 nameplate, hourly megawatts are nameplate times the capacity factor in `windcf.csv`. Sites in the same balancing authority are summed. Each sum is rounded to the nearest whole MW, with halves away from zero (0.5 becomes 1). The nameplate year is the `NAMEPLATE_YEAR` constant (`"2025"`). Zero nameplate is excluded. A `wind_ons` grid cell missing from `gridcells.csv`, or a selected cell missing from `windcf.csv`, is reported on stderr and skipped.
+
+The same run also writes `output/solar-capacity_by-ba_2025_YYYYMMDD-HHMM.csv` from `.solar` rows and `solarcf.csv`, with the same timestamp and the same shape. The dashboard reads only the wind file.
 
 `output/` is gitignored. The COPPER inputs under `data/gen-capacity-can/` are also not in git. See `data/gen-capacity-can/README.md` if those inputs are missing. Regenerate the CSV with the command above before opening the dashboard.
 

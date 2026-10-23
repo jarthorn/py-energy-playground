@@ -53,14 +53,14 @@ Inputs, under `data/gen-capacity-can/`:
 - `demand.csv` — hours 0–8759, blank hour-column header, provinces as columns, MW
 - `solar_gen_ba.csv` and `wind_gen_ba.csv` — hours 1–8760, column `h`, balancing authorities as columns, MW
 
-Demand hour 0 is generation hour 1. An authority with no column in a generation file contributes 0 MW. A structural problem (hour index, row width, unknown column, non-numeric cell) aborts with no output from that run.
+Demand hour 0 is generation hour 1. The outputs use that generation index, hours 1–8760 under column `h`. An authority with no column in a generation file contributes 0 MW. A structural problem (hour index, row width, unknown column, non-numeric cell) aborts with no output from that run.
 
 One run writes two files that share a timestamp:
 
 - `output/demand_ba_YYYYMMDD-HHMM.csv`
 - `output/net_demand_ba_YYYYMMDD-HHMM.csv`
 
-Both keep the demand hour index (0–8759) and a blank hour-column header. Columns are balancing authorities. Each cell is rounded to the nearest whole MW, with halves away from zero. A positive value below 1 MW is written as 1. Net demand is the disaggregated demand minus solar minus wind, and it may be negative.
+Both use column `h` and hours 1–8760. Columns are balancing authorities. Each cell is rounded to the nearest whole MW, with halves away from zero. A positive value below 1 MW is written as 1. Net demand is the disaggregated demand minus solar minus wind, and it may be negative.
 
 # Dashboard
 
