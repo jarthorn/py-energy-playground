@@ -214,20 +214,25 @@ class TestBuildFigure(unittest.TestCase):
         self.assertEqual(
             [annotation.text for annotation in figure.layout.annotations],
             [
-                "Ontario.a onshore wind generation, 2025",
-                "Ontario.a solar generation, 2025",
-                "Ontario.a demand, 2025",
-                "Ontario.a net demand, 2025",
+                "onshore wind generation, 2025",
+                "solar generation, 2025",
+                "demand, 2025",
+                "net demand, 2025",
             ],
         )
+        self.assertEqual(figure.layout.hovermode, "x")
+        self.assertEqual(figure.layout.hoversubplots, "axis")
+        self.assertTrue(figure.layout.xaxis.showspikes)
+        self.assertEqual(figure.layout.xaxis.spikemode, "across")
+        self.assertEqual(figure.layout.xaxis.spikesnap, "data")
         self.assertEqual(figure.layout.yaxis.rangemode, "tozero")
         self.assertEqual(figure.layout.yaxis4.rangemode, "tozero")
-        self.assertEqual(figure.layout.xaxis.matches, "x4")
-        self.assertEqual(figure.layout.xaxis2.matches, "x4")
-        self.assertEqual(figure.layout.xaxis3.matches, "x4")
-        self.assertIsNone(figure.layout.xaxis4.matches)
-        self.assertTrue(figure.layout.xaxis4.rangeslider.visible)
-        labels = [button.label for button in figure.layout.xaxis4.rangeselector.buttons]
+        self.assertGreater(figure.layout.yaxis.domain[0], figure.layout.yaxis2.domain[1])
+        self.assertGreater(figure.layout.yaxis2.domain[0], figure.layout.yaxis3.domain[1])
+        self.assertGreater(figure.layout.yaxis3.domain[0], figure.layout.yaxis4.domain[1])
+        self.assertEqual([trace.yaxis for trace in figure.data], ["y", "y2", "y3", "y4"])
+        self.assertTrue(figure.layout.xaxis.rangeslider.visible)
+        labels = [button.label for button in figure.layout.xaxis.rangeselector.buttons]
         self.assertEqual(labels, ["7 days", "30 days", "Full year"])
         self.assertEqual([list(trace.y) for trace in figure.data], [[151, 187], [0, 0], [10, 12], [9, -4]])
         self.assertEqual(list(figure.data[0].x), times)

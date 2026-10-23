@@ -18,7 +18,6 @@ from pathlib import Path
 
 import plotly.graph_objects as go
 import streamlit as st
-from plotly.subplots import make_subplots
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = REPO_ROOT / "data" / "gen-capacity-can"
@@ -185,26 +184,38 @@ def default_authority(authorities: Sequence[str]) -> str:
     return authorities[0]
 
 
+def _panel_domains(count: int) -> list[tuple[float, float]]:
+    """Top-to-bottom paper domains, leaving room under the stack for the range slider."""
+    slider = 0.09
+    gap = 0.05
+    height = (1 - slider - gap * (count - 1)) / count
+    domains: list[tuple[float, float]] = []
+    start = slider
+    for _ in range(count):
+        domains.append((start, start + height))
+        start += height + gap
+    domains.reverse()
+    return domains
+
+
 def build_figure(
     authority: str,
     display_times: Sequence[str],
     panels: Sequence[tuple[str, Sequence[int], bool]],
 ) -> go.Figure:
-    """Four stacked lines sharing one x-axis.
+    """Stacked lines on one x-axis, so a hover spike is drawn through every panel.
 
     `panels` is `(title, megawatts, pin_y_at_zero)` from top to bottom.
-    `uirevision` resets the shared zoom when the authority changes.
-    The week, month, and year buttons and the range slider sit on that shared axis.
+    `uirevision` resets the zoom when the authority changes.
     """
-    figure = make_subplots(
-        rows=len(panels),
-        cols=1,
-        shared_xaxes=True,
-        vertical_spacing=0.05,
-        subplot_titles=tuple(f"{title}, {NAMEPLATE_YEAR}" for title, _, _ in panels),
-    )
+    if not panels:
+        raise DataError("No series to chart")
+    domains = _panel_domains(len(panels))
+    figure = go.Figure()
     x_values = list(display_times)
-    for index, (title, megawatts, pin_zero) in enumerate(panels, start=1):
+    annotations = []
+    for index, ((title, megawatts, pin_zero), domain) in enumerate(zip(panels, domains, strict=True), start=1):
+        yaxis_name = "y" if index == 1 else f"y{index}"
         figure.add_trace(
             go.Scatter(
                 x=x_values,
@@ -212,33 +223,52 @@ def build_figure(
                 mode="lines",
                 line={"width": 1},
                 name=title,
+                yaxis=yaxis_name,
                 hovertemplate="%{x|%Y-%m-%d %H:%M}<br>%{y} MW<extra></extra>",
-            ),
-            row=index,
-            col=1,
+            )
         )
-        yaxis: dict[str, str] = {"title": "MW"}
+        yaxis: dict[str, object] = {"title": "MW", "domain": domain, "anchor": "x"}
         if pin_zero:
             yaxis["rangemode"] = "tozero"
-        figure.update_yaxes(**yaxis, row=index, col=1)
+        figure.update_layout({f"yaxis{'' if index == 1 else index}": yaxis})
+        annotations.append(
+            {
+                "text": f"{title}, {NAMEPLATE_YEAR}",
+                "x": 0.5,
+                "xref": "paper",
+                "y": domain[1],
+                "yref": "paper",
+                "xanchor": "center",
+                "yanchor": "bottom",
+                "showarrow": False,
+            }
+        )
 
-    figure.update_xaxes(type="date")
-    # The bottom axis owns the shared range. Paper coordinates keep the buttons
-    # at the top of the stack, where they apply to every chart.
-    figure.update_xaxes(
-        rangeslider={"visible": True},
-        rangeselector={
-            "buttons": list(RANGE_BUTTONS),
-            "x": 0,
-            "xanchor": "left",
-            "y": 1.02,
-            "yanchor": "bottom",
-        },
-        row=len(panels),
-        col=1,
-    )
+    bottom_yaxis = "y" if len(panels) == 1 else f"y{len(panels)}"
     figure.update_layout(
+        xaxis={
+            "type": "date",
+            "anchor": bottom_yaxis,
+            "domain": [0, 1],
+            "rangeslider": {"visible": True, "thickness": 0.06},
+            "rangeselector": {
+                "buttons": list(RANGE_BUTTONS),
+                "x": 0,
+                "xanchor": "left",
+                "y": 1.02,
+                "yanchor": "bottom",
+            },
+            "showspikes": True,
+            "spikemode": "across",
+            "spikesnap": "data",
+            "spikecolor": "#333333",
+            "spikethickness": 1,
+        },
+        annotations=annotations,
         height=260 * len(panels) + 120,
+        hovermode="x",
+        hoversubplots="axis",
+        spikedistance=-1,
         uirevision=authority,
         showlegend=False,
         margin={"l": 64, "r": 24, "t": 72, "b": 24},
