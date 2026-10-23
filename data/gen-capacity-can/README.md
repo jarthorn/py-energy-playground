@@ -1,6 +1,6 @@
 # Overview
 
-This folder contains data from the COPPER data model. These data files are used by the scripts in src/gen-capacity-can/.
+This folder contains data from the COPPER data model. These data files are used by the scripts in src/gen-capacity-can/. Some of the files in this folder are aggregated from input COPPER files, while others are directly imported from COPPER.
 
 These data files are not stored in git. If they are missing, they need to be imported from the COPPER repository.
 
@@ -11,6 +11,13 @@ git clone https://gitlab.com/sesit/copper
 ```
 
 2. Copy the required data files into this folder:
-    - copper/scenarios/common/gridcells.csv
-    - copper/scenarios/common/extant_wind_solar.csv
-    - copper/scenarios/common/windcf.csv
+- copper/scenarios/common/gridcells.csv
+- copper/scenarios/common/extant_wind_solar.csv
+- copper/scenarios/common/windcf.csv
+- copper/scenarios/common/solarcf.csv
+
+3. The following files are derived from the above inputs, using scripts in src/gen-capacity-can:
+- demand_ba.csv
+- net_demand_ba.csv
+- solar_gen_ba.csv
+- wind_gen_ba.csv
