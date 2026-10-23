@@ -6,7 +6,7 @@ and sums those MW values within each balancing authority. The result is one
 CSV: rows are hours 1–8760, columns are balancing authority labels.
 
 Usage:
-    uv run python src/gen-capacity-can/hourly_wind_generation.py
+    uv run python src/gen-capacity-can/hourly_variable_generation.py
 
 Writes:
     output/wind-capacity-on_by-ba_<year>_YYYYMMDD-HHMM.csv

@@ -10,11 +10,11 @@ import unittest
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SCRIPT_PATH = PROJECT_ROOT / "src" / "gen-capacity-can" / "hourly_wind_generation.py"
+SCRIPT_PATH = PROJECT_ROOT / "src" / "gen-capacity-can" / "hourly_variable_generation.py"
 
 
 def load_module():
-    spec = importlib.util.spec_from_file_location("hourly_wind_generation", SCRIPT_PATH)
+    spec = importlib.util.spec_from_file_location("hourly_variable_generation", SCRIPT_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module

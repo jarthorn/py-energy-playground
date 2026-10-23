@@ -16,10 +16,10 @@ Revisit the stack only if the page later needs accounts, a public URL, or a layo
 
 The dashboard reads the aggregation script’s output, not the COPPER source files.
 
-`src/gen-capacity-can/hourly_wind_generation.py` builds that file:
+`src/gen-capacity-can/hourly_variable_generation.py` builds that file:
 
 ```bash
-uv run python src/gen-capacity-can/hourly_wind_generation.py
+uv run python src/gen-capacity-can/hourly_variable_generation.py
 ```
 
 For each onshore wind site (`location` ending in `.wind_ons`) with positive 2025 nameplate, hourly megawatts are nameplate times the capacity factor in `windcf.csv`. Sites in the same balancing authority are summed. Each sum is rounded to the nearest whole MW, with halves away from zero (0.5 becomes 1). The nameplate year is the `NAMEPLATE_YEAR` constant (`"2025"`). Solar rows and zero nameplate are excluded. A `wind_ons` grid cell missing from `gridcells.csv`, or a selected cell missing from `windcf.csv`, is reported on stderr and skipped.
@@ -97,4 +97,4 @@ Title the chart with the selected authority and the year, for example `Ontario.a
 
 From `project-overview.md`: Python, Ruff (`uv run ruff check` and `uv run ruff format` on Python changes), uv for every Python command. Test logic that can silently mis-handle the file: hour index, integer parsing, and the hour-to-datetime mapping. A bad input should surface an error rather than a partial chart.
 
-Read `src/gen-capacity-can/hourly_wind_generation.py` and `src/gen-capacity-can/README.md` before changing how the CSV is interpreted. The aggregation script is the source of the file format above.
+Read `src/gen-capacity-can/hourly_variable_generation.py` and `src/gen-capacity-can/README.md` before changing how the CSV is interpreted. The aggregation script is the source of the file format above.

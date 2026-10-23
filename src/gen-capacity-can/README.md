@@ -33,7 +33,7 @@ For a given hour of the year (h), the expected power output is NAMEPLATE_CAPACIT
 From the repository root, build the hourly file, then open the page. The page reads the newest `output/wind-capacity-on_by-ba_2025_YYYYMMDD-HHMM.csv`. It does not recompute generation from the COPPER inputs.
 
 ```bash
-uv run python src/gen-capacity-can/hourly_wind_generation.py
+uv run python src/gen-capacity-can/hourly_variable_generation.py
 uv run streamlit run src/gen-capacity-can/dashboard.py
 ```
 

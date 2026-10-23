@@ -1,6 +1,6 @@
 """Chart hourly onshore wind generation by balancing authority.
 
-Reads the newest by-authority CSV written by hourly_wind_generation.py.
+Reads the newest by-authority CSV written by hourly_variable_generation.py.
 Does not recompute generation from the COPPER inputs.
 
 Usage:
@@ -22,7 +22,7 @@ import streamlit as st
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUT_DIR = REPO_ROOT / "output"
 
-# These match hourly_wind_generation.py. The dashboard only reads that script's CSV.
+# These match hourly_variable_generation.py. The dashboard only reads that script's CSV.
 SCRIPT_NAME = "wind-capacity-on"
 NAMEPLATE_YEAR = "2025"
 HOURS_IN_YEAR = 8760
@@ -32,7 +32,7 @@ INTEGER_MW = re.compile(r"-?\d+")
 DEFAULT_AUTHORITY = "Ontario.a"
 # Fits the longest label ("Newfoundland and Labrador.a") without spanning the chart.
 AUTHORITY_SELECT_WIDTH = 320
-REGENERATE = "uv run python src/gen-capacity-can/hourly_wind_generation.py"
+REGENERATE = "uv run python src/gen-capacity-can/hourly_variable_generation.py"
 
 
 class DataError(Exception):

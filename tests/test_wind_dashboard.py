@@ -12,7 +12,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DASHBOARD_PATH = PROJECT_ROOT / "src" / "gen-capacity-can" / "dashboard.py"
-AGGREGATION_PATH = PROJECT_ROOT / "src" / "gen-capacity-can" / "hourly_wind_generation.py"
+AGGREGATION_PATH = PROJECT_ROOT / "src" / "gen-capacity-can" / "hourly_variable_generation.py"
 
 
 def load_module(path: Path, name: str):
@@ -25,7 +25,7 @@ def load_module(path: Path, name: str):
 
 
 dash = load_module(DASHBOARD_PATH, "wind_dashboard")
-aggregation = load_module(AGGREGATION_PATH, "hourly_wind_generation")
+aggregation = load_module(AGGREGATION_PATH, "hourly_variable_generation")
 
 
 def write_csv(path: Path, rows: list[list[str]]) -> None:
