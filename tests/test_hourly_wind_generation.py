@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SCRIPT_PATH = PROJECT_ROOT / "src" / "wind-capacity-on" / "hourly_wind_generation.py"
+SCRIPT_PATH = PROJECT_ROOT / "src" / "gen-capacity-can" / "hourly_wind_generation.py"
 
 
 def load_module():

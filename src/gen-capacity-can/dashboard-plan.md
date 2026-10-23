@@ -16,15 +16,15 @@ Revisit the stack only if the page later needs accounts, a public URL, or a layo
 
 The dashboard reads the aggregation script’s output, not the COPPER source files.
 
-`src/wind-capacity-on/hourly_wind_generation.py` builds that file:
+`src/gen-capacity-can/hourly_wind_generation.py` builds that file:
 
 ```bash
-uv run python src/wind-capacity-on/hourly_wind_generation.py
+uv run python src/gen-capacity-can/hourly_wind_generation.py
 ```
 
 For each onshore wind site (`location` ending in `.wind_ons`) with positive 2025 nameplate, hourly megawatts are nameplate times the capacity factor in `windcf.csv`. Sites in the same balancing authority are summed. Each sum is rounded to the nearest whole MW, with halves away from zero (0.5 becomes 1). The nameplate year is the `NAMEPLATE_YEAR` constant (`"2025"`). Solar rows and zero nameplate are excluded. A `wind_ons` grid cell missing from `gridcells.csv`, or a selected cell missing from `windcf.csv`, is reported on stderr and skipped.
 
-`output/` is gitignored. The COPPER inputs under `data/wind-capacity-on/` are also not in git. See `data/wind-capacity-on/README.md` if those inputs are missing. Regenerate the CSV with the command above before opening the dashboard.
+`output/` is gitignored. The COPPER inputs under `data/gen-capacity-can/` are also not in git. See `data/gen-capacity-can/README.md` if those inputs are missing. Regenerate the CSV with the command above before opening the dashboard.
 
 ## Input the dashboard should load
 
@@ -72,9 +72,9 @@ Fail visibly if the file is missing, `h` is missing, a data cell is not an integ
 
 ## Page behavior
 
-One Streamlit page, suggested path `src/wind-capacity-on/dashboard.py`.
+One Streamlit page, suggested path `src/gen-capacity-can/dashboard.py`.
 
-Run it with uv, for example `uv run streamlit run src/wind-capacity-on/dashboard.py`.
+Run it with uv, for example `uv run streamlit run src/gen-capacity-can/dashboard.py`.
 
 - A select box lists the authority columns. Default the selection to `Ontario.a` when that column exists; otherwise the first column.
 - One Plotly line chart of the selected authority. Y axis is MW. X axis is time within the year, so zooming lands on days and weeks rather than hour numbers.
@@ -97,4 +97,4 @@ Title the chart with the selected authority and the year, for example `Ontario.a
 
 From `project-overview.md`: Python, Ruff (`uv run ruff check` and `uv run ruff format` on Python changes), uv for every Python command. Test logic that can silently mis-handle the file: hour index, integer parsing, and the hour-to-datetime mapping. A bad input should surface an error rather than a partial chart.
 
-Read `src/wind-capacity-on/hourly_wind_generation.py` and `src/wind-capacity-on/README.md` before changing how the CSV is interpreted. The aggregation script is the source of the file format above.
+Read `src/gen-capacity-can/hourly_wind_generation.py` and `src/gen-capacity-can/README.md` before changing how the CSV is interpreted. The aggregation script is the source of the file format above.

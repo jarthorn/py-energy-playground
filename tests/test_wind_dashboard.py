@@ -11,8 +11,8 @@ from datetime import datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DASHBOARD_PATH = PROJECT_ROOT / "src" / "wind-capacity-on" / "dashboard.py"
-AGGREGATION_PATH = PROJECT_ROOT / "src" / "wind-capacity-on" / "hourly_wind_generation.py"
+DASHBOARD_PATH = PROJECT_ROOT / "src" / "gen-capacity-can" / "dashboard.py"
+AGGREGATION_PATH = PROJECT_ROOT / "src" / "gen-capacity-can" / "hourly_wind_generation.py"
 
 
 def load_module(path: Path, name: str):

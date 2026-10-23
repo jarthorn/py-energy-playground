@@ -1,6 +1,6 @@
 # Overview
 
-This folder contains data from the COPPER data model. These data files are used by the scripts in src/wind-capacity-on/.
+This folder contains data from the COPPER data model. These data files are used by the scripts in src/gen-capacity-can/.
 
 These data files are not stored in git. If they are missing, they need to be imported from the COPPER repository.
 

@@ -4,7 +4,7 @@ Reads the newest by-authority CSV written by hourly_wind_generation.py.
 Does not recompute generation from the COPPER inputs.
 
 Usage:
-    uv run streamlit run src/wind-capacity-on/dashboard.py
+    uv run streamlit run src/gen-capacity-can/dashboard.py
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ INTEGER_MW = re.compile(r"-?\d+")
 DEFAULT_AUTHORITY = "Ontario.a"
 # Fits the longest label ("Newfoundland and Labrador.a") without spanning the chart.
 AUTHORITY_SELECT_WIDTH = 320
-REGENERATE = "uv run python src/wind-capacity-on/hourly_wind_generation.py"
+REGENERATE = "uv run python src/gen-capacity-can/hourly_wind_generation.py"
 
 
 class DataError(Exception):

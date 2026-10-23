@@ -4,7 +4,7 @@ This folder contains scripts for analyzing the capacity of extant wind power gen
 
 
 # Source data
-The data for this script comes from the COPPER data model. See [../data/wind-capacity-on/README.md](data readme) for details on loading data.
+The data for this script comes from the COPPER data model. See [../../data/gen-capacity-can/README.md](data readme) for details on loading data.
 
 The following files are used:
 
@@ -33,8 +33,8 @@ For a given hour of the year (h), the expected power output is NAMEPLATE_CAPACIT
 From the repository root, build the hourly file, then open the page. The page reads the newest `output/wind-capacity-on_by-ba_2025_YYYYMMDD-HHMM.csv`. It does not recompute generation from the COPPER inputs.
 
 ```bash
-uv run python src/wind-capacity-on/hourly_wind_generation.py
-uv run streamlit run src/wind-capacity-on/dashboard.py
+uv run python src/gen-capacity-can/hourly_wind_generation.py
+uv run streamlit run src/gen-capacity-can/dashboard.py
 ```
 
 Choose a balancing authority. The chart is estimated hourly megawatts for 2025 nameplate: each site's capacity factor times its nameplate, summed within the authority.

@@ -6,7 +6,7 @@ and sums those MW values within each balancing authority. The result is one
 CSV: rows are hours 1–8760, columns are balancing authority labels.
 
 Usage:
-    uv run python src/wind-capacity-on/hourly_wind_generation.py
+    uv run python src/gen-capacity-can/hourly_wind_generation.py
 
 Writes:
     output/wind-capacity-on_by-ba_<year>_YYYYMMDD-HHMM.csv
@@ -25,7 +25,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUT_DIR = REPO_ROOT / "output"
-DATA_DIR = REPO_ROOT / "data" / "wind-capacity-on"
+DATA_DIR = REPO_ROOT / "data" / "gen-capacity-can"
 DEFAULT_EXTANT = DATA_DIR / "extant_wind_solar.csv"
 DEFAULT_GRIDCELLS = DATA_DIR / "gridcells.csv"
 DEFAULT_WINDCF = DATA_DIR / "windcf.csv"

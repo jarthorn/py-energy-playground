@@ -212,7 +212,7 @@ data/emberstats/*.json
 data/ev-charging-mtl/*.csv
 data/ev-charging-norway/*.csv
 data/ev-charging-us/*.csv
-data/wind-capacity-on/*.csv
+data/gen-capacity-can/*.csv
 
 # Generated reports
 output/
