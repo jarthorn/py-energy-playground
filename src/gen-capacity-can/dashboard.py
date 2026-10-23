@@ -1,7 +1,7 @@
-"""Chart hourly onshore wind generation by balancing authority.
+"""Chart hourly wind, solar, demand, and net demand by balancing authority.
 
-Reads the newest by-authority CSV written by hourly_variable_generation.py.
-Does not recompute generation from the COPPER inputs.
+Reads the four by-authority CSVs in data/gen-capacity-can/. Does not recompute
+them from the COPPER inputs. The charts share one time axis.
 
 Usage:
     uv run streamlit run src/gen-capacity-can/dashboard.py
@@ -18,49 +18,53 @@ from pathlib import Path
 
 import plotly.graph_objects as go
 import streamlit as st
+from plotly.subplots import make_subplots
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-OUTPUT_DIR = REPO_ROOT / "output"
+DATA_DIR = REPO_ROOT / "data" / "gen-capacity-can"
 
-# These match hourly_variable_generation.py. The dashboard only reads that script's CSV.
-SCRIPT_NAME = "wind-capacity-on"
 NAMEPLATE_YEAR = "2025"
 HOURS_IN_YEAR = 8760
 DISPLAY_YEAR = int(NAMEPLATE_YEAR)
-BY_BA_NAME = re.compile(rf"^{re.escape(SCRIPT_NAME)}_by-ba_{NAMEPLATE_YEAR}_\d{{8}}-\d{{4}}\.csv$")
 INTEGER_MW = re.compile(r"-?\d+")
 DEFAULT_AUTHORITY = "Ontario.a"
-# Fits the longest label ("Newfoundland and Labrador.a") without spanning the chart.
-AUTHORITY_SELECT_WIDTH = 320
-REGENERATE = "uv run python src/gen-capacity-can/hourly_variable_generation.py"
-
-
-class DataError(Exception):
-    """The hourly CSV broke an assumption. The page shows this instead of a chart."""
+# Fits the longest label ("Newfoundland and Labrador.b") without spanning the chart.
+AUTHORITY_SELECT_WIDTH = 340
 
 
 @dataclass(frozen=True)
-class HourlyWind:
+class SeriesSpec:
+    filename: str
+    title: str
+    pin_zero: bool
+
+
+# Top to bottom: the original wind chart, then solar, demand, and net demand.
+SERIES = (
+    SeriesSpec("wind_gen_ba.csv", "Estimated onshore wind generation", True),
+    SeriesSpec("solar_gen_ba.csv", "Estimated solar generation", True),
+    SeriesSpec("demand_ba.csv", "Demand", True),
+    SeriesSpec("net_demand_ba.csv", "Net demand", True),
+)
+
+RANGE_BUTTONS = (
+    {"count": 7, "label": "7 days", "step": "day", "stepmode": "backward"},
+    {"count": 30, "label": "30 days", "step": "day", "stepmode": "backward"},
+    {"step": "all", "label": "Full year"},
+)
+
+
+class DataError(Exception):
+    """An hourly CSV broke an assumption. The page shows this instead of a chart."""
+
+
+@dataclass(frozen=True)
+class HourlySeries:
     path: Path
     authorities: tuple[str, ...]
     hours: tuple[int, ...]
     series: dict[str, tuple[int, ...]]
     display_times: tuple[str, ...]
-
-
-def latest_by_ba_csv(output_dir: Path) -> Path:
-    """Newest `wind-capacity-on_by-ba_<year>_YYYYMMDD-HHMM.csv` in `output_dir`.
-
-    The timestamp sorts lexicographically, so the greatest filename is the latest run.
-    """
-    expected = f"output/{SCRIPT_NAME}_by-ba_{NAMEPLATE_YEAR}_YYYYMMDD-HHMM.csv"
-    if not output_dir.is_dir():
-        raise DataError(f"No output directory at {output_dir}. Regenerate the hourly file with: {REGENERATE}")
-    matches = [path for path in output_dir.iterdir() if path.is_file() and BY_BA_NAME.fullmatch(path.name)]
-    if not matches:
-        raise DataError(f"No file matching {expected} in {output_dir}. Regenerate it with: {REGENERATE}")
-    matches.sort(key=lambda path: path.name)
-    return matches[-1]
 
 
 def parse_mw_cell(value: str) -> int:
@@ -86,7 +90,7 @@ def format_display_time(moment: datetime) -> str:
     return moment.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def load_hourly_wind(path: Path, *, hours_in_year: int = HOURS_IN_YEAR) -> HourlyWind:
+def load_hourly_csv(path: Path, *, hours_in_year: int = HOURS_IN_YEAR) -> HourlySeries:
     """Read one by-authority CSV. Raises DataError rather than returning a partial table."""
     if not path.is_file():
         raise DataError(f"Input file not found: {path}")
@@ -138,13 +142,39 @@ def load_hourly_wind(path: Path, *, hours_in_year: int = HOURS_IN_YEAR) -> Hourl
 
     display_times = tuple(format_display_time(hour_to_display_time(hour)) for hour in hours)
     series = {authority: tuple(values) for authority, values in zip(authorities, columns, strict=True)}
-    return HourlyWind(
+    return HourlySeries(
         path=path,
         authorities=tuple(authorities),
         hours=tuple(hours),
         series=series,
         display_times=display_times,
     )
+
+
+def require_same_hours(tables: Sequence[HourlySeries]) -> None:
+    """The four charts share one x-axis, so the hour indexes have to be identical."""
+    if not tables:
+        raise DataError("No hourly files to chart")
+    expected = tables[0].hours
+    for table in tables[1:]:
+        if table.hours != expected:
+            raise DataError(f"{table.path.name} hours do not match {tables[0].path.name}")
+
+
+def authorities_present(tables: Sequence[HourlySeries]) -> tuple[str, ...]:
+    """Alphabetical union of authority columns. A later chart may lack a column."""
+    names = {name for table in tables for name in table.authorities}
+    if not names:
+        raise DataError("No balancing authority columns to chart")
+    return tuple(sorted(names))
+
+
+def series_or_zeros(table: HourlySeries, authority: str) -> tuple[int, ...]:
+    """Missing balancing authorities are regions with zero generation of that type."""
+    found = table.series.get(authority)
+    if found is not None:
+        return found
+    return tuple(0 for _ in table.hours)
 
 
 def default_authority(authorities: Sequence[str]) -> str:
@@ -155,56 +185,96 @@ def default_authority(authorities: Sequence[str]) -> str:
     return authorities[0]
 
 
-def build_figure(authority: str, display_times: Sequence[str], megawatts: Sequence[int]) -> go.Figure:
-    """One line for `authority`. `uirevision` resets zoom when the authority changes."""
-    figure = go.Figure(
-        data=[
+def build_figure(
+    authority: str,
+    display_times: Sequence[str],
+    panels: Sequence[tuple[str, Sequence[int], bool]],
+) -> go.Figure:
+    """Four stacked lines sharing one x-axis.
+
+    `panels` is `(title, megawatts, pin_y_at_zero)` from top to bottom.
+    `uirevision` resets the shared zoom when the authority changes.
+    The week, month, and year buttons and the range slider sit on that shared axis.
+    """
+    figure = make_subplots(
+        rows=len(panels),
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.05,
+        subplot_titles=tuple(f"{title}, {NAMEPLATE_YEAR}" for title, _, _ in panels),
+    )
+    x_values = list(display_times)
+    for index, (title, megawatts, pin_zero) in enumerate(panels, start=1):
+        figure.add_trace(
             go.Scatter(
-                x=list(display_times),
+                x=x_values,
                 y=list(megawatts),
                 mode="lines",
                 line={"width": 1},
-                name=authority,
+                name=title,
                 hovertemplate="%{x|%Y-%m-%d %H:%M}<br>%{y} MW<extra></extra>",
-            )
-        ]
+            ),
+            row=index,
+            col=1,
+        )
+        yaxis: dict[str, str] = {"title": "MW"}
+        if pin_zero:
+            yaxis["rangemode"] = "tozero"
+        figure.update_yaxes(**yaxis, row=index, col=1)
+
+    figure.update_xaxes(type="date")
+    # The bottom axis owns the shared range. Paper coordinates keep the buttons
+    # at the top of the stack, where they apply to every chart.
+    figure.update_xaxes(
+        rangeslider={"visible": True},
+        rangeselector={
+            "buttons": list(RANGE_BUTTONS),
+            "x": 0,
+            "xanchor": "left",
+            "y": 1.02,
+            "yanchor": "bottom",
+        },
+        row=len(panels),
+        col=1,
     )
     figure.update_layout(
-        title=f"{authority} onshore wind generation, {NAMEPLATE_YEAR}",
+        height=260 * len(panels) + 120,
         uirevision=authority,
-        height=640,
-        margin={"l": 64, "r": 24, "t": 88, "b": 32},
         showlegend=False,
-        yaxis={"title": "MW", "rangemode": "tozero"},
-        xaxis={
-            "type": "date",
-            "rangeslider": {"visible": True},
-            "rangeselector": {
-                "buttons": [
-                    {"count": 7, "label": "7 days", "step": "day", "stepmode": "backward"},
-                    {"count": 30, "label": "30 days", "step": "day", "stepmode": "backward"},
-                    {"step": "all", "label": "Full year"},
-                ]
-            },
-        },
+        margin={"l": 64, "r": 24, "t": 72, "b": 24},
     )
     return figure
 
 
-@st.cache_data(show_spinner="Reading hourly wind file")
-def cached_hourly_wind(path_str: str) -> HourlyWind:
-    return load_hourly_wind(Path(path_str))
+def panels_for(authority: str, tables: Sequence[HourlySeries]) -> tuple[tuple[str, tuple[int, ...], bool], ...]:
+    if len(tables) != len(SERIES):
+        raise DataError(f"Expected {len(SERIES)} hourly files, got {len(tables)}")
+    return tuple(
+        (spec.title, series_or_zeros(table, authority), spec.pin_zero)
+        for spec, table in zip(SERIES, tables, strict=True)
+    )
+
+
+@st.cache_data(show_spinner="Reading hourly files")
+def cached_hourly_csv(path_str: str) -> HourlySeries:
+    return load_hourly_csv(Path(path_str))
+
+
+def load_dashboard_tables() -> tuple[HourlySeries, ...]:
+    tables = tuple(cached_hourly_csv(str(DATA_DIR / spec.filename)) for spec in SERIES)
+    require_same_hours(tables)
+    return tables
 
 
 def main() -> None:
-    st.set_page_config(page_title=f"Onshore wind generation, {NAMEPLATE_YEAR}", layout="wide")
+    st.set_page_config(page_title=f"Generation and demand, {NAMEPLATE_YEAR}", layout="wide")
     try:
-        table = cached_hourly_wind(str(latest_by_ba_csv(OUTPUT_DIR)))
+        tables = load_dashboard_tables()
     except DataError as exc:
         st.error(str(exc))
         st.stop()
 
-    authorities = list(table.authorities)
+    authorities = list(authorities_present(tables))
     authority = st.selectbox(
         "Balancing authority",
         authorities,
@@ -212,7 +282,7 @@ def main() -> None:
         width=AUTHORITY_SELECT_WIDTH,
     )
     st.plotly_chart(
-        build_figure(authority, table.display_times, table.series[authority]),
+        build_figure(authority, tables[0].display_times, panels_for(authority, tables)),
         width="stretch",
         config={"scrollZoom": True, "displaylogo": False},
     )
@@ -220,6 +290,18 @@ def main() -> None:
         f"Estimated hourly wind generation for {authority} in {NAMEPLATE_YEAR}. "
         "Uses localized capacity factors for each wind generator location sourced from MERRA, "
         "multiplied by nameplate capacity of each plant."
+    )
+    st.caption(
+        f"Estimated hourly solar generation for {authority} in {NAMEPLATE_YEAR}. "
+        "Uses localized capacity factors for each solar generator location, "
+        "multiplied by nameplate capacity of each plant."
+    )
+    st.caption(
+        f"Estimated hourly demand for {authority} in {NAMEPLATE_YEAR}. "
+        "Provincial demand is shared across balancing authorities by population."
+    )
+    st.caption(
+        f"Estimated hourly net demand for {authority} in {NAMEPLATE_YEAR}. Demand minus wind and solar generation."
     )
 
 

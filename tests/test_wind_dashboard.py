@@ -92,7 +92,7 @@ class TestLoadHourlyWind(unittest.TestCase):
                 [["10", "151"], ["0", "187"]],
             ),
         )
-        table = dash.load_hourly_wind(self.path, hours_in_year=2)
+        table = dash.load_hourly_csv(self.path, hours_in_year=2)
         self.assertEqual(table.authorities, ("Alberta.a", "Ontario.a"))
         self.assertEqual(table.hours, (1, 2))
         self.assertEqual(table.series["Ontario.a"], (151, 187))
@@ -102,83 +102,88 @@ class TestLoadHourlyWind(unittest.TestCase):
     def test_missing_hour_column_fails(self):
         write_csv(self.path, [["Ontario.a"], ["151"]])
         with self.assertRaises(dash.DataError) as caught:
-            dash.load_hourly_wind(self.path, hours_in_year=1)
+            dash.load_hourly_csv(self.path, hours_in_year=1)
         self.assertIn("header must start with column 'h'", str(caught.exception))
 
     def test_byte_order_mark_fails(self):
         write_csv(self.path, hourly_rows(["Ontario.a"], [["151"]]))
         self.path.write_bytes(b"\xef\xbb\xbf" + self.path.read_bytes())
         with self.assertRaises(dash.DataError) as caught:
-            dash.load_hourly_wind(self.path, hours_in_year=1)
+            dash.load_hourly_csv(self.path, hours_in_year=1)
         self.assertIn("header must start with column 'h'", str(caught.exception))
 
     def test_decimal_megawatts_fail(self):
         write_csv(self.path, hourly_rows(["Ontario.a"], [["151.133308"]]))
         with self.assertRaises(dash.DataError) as caught:
-            dash.load_hourly_wind(self.path, hours_in_year=1)
+            dash.load_hourly_csv(self.path, hours_in_year=1)
         self.assertIn("not an integer MW value", str(caught.exception))
         self.assertIn("Ontario.a", str(caught.exception))
 
     def test_hour_gap_fails(self):
         write_csv(self.path, [["h", "Ontario.a"], ["1", "10"], ["3", "12"]])
         with self.assertRaises(dash.DataError) as caught:
-            dash.load_hourly_wind(self.path, hours_in_year=2)
+            dash.load_hourly_csv(self.path, hours_in_year=2)
         self.assertIn("where 2 was expected", str(caught.exception))
 
     def test_short_row_fails(self):
         write_csv(self.path, [["h", "Ontario.a", "Quebec.a"], ["1", "10"]])
         with self.assertRaises(dash.DataError) as caught:
-            dash.load_hourly_wind(self.path, hours_in_year=1)
+            dash.load_hourly_csv(self.path, hours_in_year=1)
         self.assertIn("has 2 columns; header has 3", str(caught.exception))
 
     def test_wrong_row_count_fails(self):
         write_csv(self.path, hourly_rows(["Ontario.a"], [["10"]]))
         with self.assertRaises(dash.DataError) as caught:
-            dash.load_hourly_wind(self.path, hours_in_year=2)
+            dash.load_hourly_csv(self.path, hours_in_year=2)
         self.assertIn("has 1 hour rows; expected 2", str(caught.exception))
 
     def test_duplicate_authority_fails(self):
         write_csv(self.path, hourly_rows(["Ontario.a", "Ontario.a"], [["10", "12"]]))
         with self.assertRaises(dash.DataError) as caught:
-            dash.load_hourly_wind(self.path, hours_in_year=1)
+            dash.load_hourly_csv(self.path, hours_in_year=1)
         self.assertIn("repeats balancing authority column 'Ontario.a'", str(caught.exception))
 
     def test_missing_file_fails(self):
         with self.assertRaises(dash.DataError) as caught:
-            dash.load_hourly_wind(self.path, hours_in_year=1)
+            dash.load_hourly_csv(self.path, hours_in_year=1)
         self.assertIn("Input file not found", str(caught.exception))
 
 
-class TestLatestByBaCsv(unittest.TestCase):
-    def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.tmp.cleanup)
-        self.output = Path(self.tmp.name)
+class TestAlignSeries(unittest.TestCase):
+    def test_missing_authority_is_a_zero_series(self):
+        table = dash.HourlySeries(
+            path=Path("solar.csv"),
+            authorities=("Ontario.a",),
+            hours=(1, 2),
+            series={"Ontario.a": (4, 5)},
+            display_times=("2025-01-01 00:00:00", "2025-01-01 01:00:00"),
+        )
+        self.assertEqual(dash.series_or_zeros(table, "Ontario.a"), (4, 5))
+        self.assertEqual(dash.series_or_zeros(table, "Manitoba.a"), (0, 0))
 
-    def test_picks_the_lexicographically_latest_by_authority_file(self):
-        names = [
-            "wind-capacity-on_Ontario.a_2025_20261022-1800.csv",
-            "wind-capacity-on_by-ba_2025_20261022-1722.csv",
-            "wind-capacity-on_by-ba_2025_20261022-1728.csv",
-            "wind-capacity-on_by-ba_2025_20261022-1728.csv.partial",
-            "wind-capacity-on_by-ba_2030_20261022-1900.csv",
-            "notes.txt",
-        ]
-        for name in names:
-            (self.output / name).write_text("h\n", encoding="utf-8")
-        chosen = dash.latest_by_ba_csv(self.output)
-        self.assertEqual(chosen.name, "wind-capacity-on_by-ba_2025_20261022-1728.csv")
+    def test_authority_list_is_the_sorted_union(self):
+        wind = dash.HourlySeries(
+            Path("wind.csv"),
+            ("Ontario.a", "Alberta.a"),
+            (1,),
+            {"Ontario.a": (1,), "Alberta.a": (2,)},
+            ("2025-01-01 00:00:00",),
+        )
+        solar = dash.HourlySeries(
+            Path("solar.csv"),
+            ("Ontario.a",),
+            (1,),
+            {"Ontario.a": (3,)},
+            ("2025-01-01 00:00:00",),
+        )
+        self.assertEqual(dash.authorities_present((wind, solar)), ("Alberta.a", "Ontario.a"))
 
-    def test_missing_directory_fails(self):
+    def test_different_hour_indexes_fail(self):
+        first = dash.HourlySeries(Path("wind.csv"), ("Ontario.a",), (1, 2), {"Ontario.a": (1, 2)}, ("a", "b"))
+        second = dash.HourlySeries(Path("demand.csv"), ("Ontario.a",), (1,), {"Ontario.a": (3,)}, ("a",))
         with self.assertRaises(dash.DataError) as caught:
-            dash.latest_by_ba_csv(self.output / "missing")
-        self.assertIn("No output directory", str(caught.exception))
-
-    def test_no_matching_file_fails(self):
-        (self.output / "wind-capacity-on_Ontario.a_2025_20261022-1523.csv").write_text("h\n", encoding="utf-8")
-        with self.assertRaises(dash.DataError) as caught:
-            dash.latest_by_ba_csv(self.output)
-        self.assertIn("No file matching", str(caught.exception))
+            dash.require_same_hours((first, second))
+        self.assertIn("demand.csv hours do not match wind.csv", str(caught.exception))
 
 
 class TestDefaultAuthority(unittest.TestCase):
@@ -190,26 +195,43 @@ class TestDefaultAuthority(unittest.TestCase):
 
 
 class TestAggregationContract(unittest.TestCase):
-    def test_filename_pattern_matches_the_aggregation_script(self):
-        name = aggregation.output_path(datetime(2026, 10, 22, 17, 28)).name
-        self.assertEqual(name, "wind-capacity-on_by-ba_2025_20261022-1728.csv")
-        self.assertIsNotNone(dash.BY_BA_NAME.fullmatch(name))
+    def test_year_length_matches_the_aggregation_script(self):
         self.assertEqual(dash.NAMEPLATE_YEAR, aggregation.NAMEPLATE_YEAR)
         self.assertEqual(dash.HOURS_IN_YEAR, aggregation.HOURS_IN_YEAR)
 
 
 class TestBuildFigure(unittest.TestCase):
-    def test_titles_the_series_and_offers_the_shorter_windows(self):
-        figure = dash.build_figure("Ontario.a", ["2025-01-01 00:00:00", "2025-01-01 01:00:00"], [151, 187])
-        self.assertEqual(figure.layout.title.text, "Ontario.a onshore wind generation, 2025")
+    def test_stacks_four_series_on_one_x_axis(self):
+        times = ["2025-01-01 00:00:00", "2025-01-01 01:00:00"]
+        panels = (
+            ("onshore wind generation", [151, 187], True),
+            ("solar generation", [0, 0], True),
+            ("demand", [10, 12], True),
+            ("net demand", [9, -4], True),
+        )
+        figure = dash.build_figure("Ontario.a", times, panels)
         self.assertEqual(figure.layout.uirevision, "Ontario.a")
+        self.assertEqual(
+            [annotation.text for annotation in figure.layout.annotations],
+            [
+                "Ontario.a onshore wind generation, 2025",
+                "Ontario.a solar generation, 2025",
+                "Ontario.a demand, 2025",
+                "Ontario.a net demand, 2025",
+            ],
+        )
         self.assertEqual(figure.layout.yaxis.rangemode, "tozero")
-        self.assertEqual(figure.layout.yaxis.title.text, "MW")
-        self.assertTrue(figure.layout.xaxis.rangeslider.visible)
-        labels = [button.label for button in figure.layout.xaxis.rangeselector.buttons]
+        self.assertEqual(figure.layout.yaxis4.rangemode, "tozero")
+        self.assertEqual(figure.layout.xaxis.matches, "x4")
+        self.assertEqual(figure.layout.xaxis2.matches, "x4")
+        self.assertEqual(figure.layout.xaxis3.matches, "x4")
+        self.assertIsNone(figure.layout.xaxis4.matches)
+        self.assertTrue(figure.layout.xaxis4.rangeslider.visible)
+        labels = [button.label for button in figure.layout.xaxis4.rangeselector.buttons]
         self.assertEqual(labels, ["7 days", "30 days", "Full year"])
-        self.assertEqual(list(figure.data[0].x), ["2025-01-01 00:00:00", "2025-01-01 01:00:00"])
-        self.assertEqual(list(figure.data[0].y), [151, 187])
+        self.assertEqual([list(trace.y) for trace in figure.data], [[151, 187], [0, 0], [10, 12], [9, -4]])
+        self.assertEqual(list(figure.data[0].x), times)
+        self.assertEqual(list(figure.data[3].x), times)
 
 
 if __name__ == "__main__":

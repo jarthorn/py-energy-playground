@@ -64,11 +64,15 @@ Both use column `h` and hours 1–8760. Columns are balancing authorities. Each 
 
 # Dashboard
 
-From the repository root, build the hourly files, then open the page. The page reads the newest `output/wind-capacity-on_by-ba_2025_YYYYMMDD-HHMM.csv`. It does not recompute generation from the COPPER inputs, and it does not chart the solar file.
+From the repository root, open the page. It reads these files in `data/gen-capacity-can/`:
+
+- `wind_gen_ba.csv`
+- `solar_gen_ba.csv`
+- `demand_ba.csv`
+- `net_demand_ba.csv`
 
 ```bash
-uv run python src/gen-capacity-can/hourly_variable_generation.py
 uv run streamlit run src/gen-capacity-can/dashboard.py
 ```
 
-Choose a balancing authority. The chart is estimated hourly onshore wind megawatts for 2025 nameplate: each site's capacity factor times its nameplate, summed within the authority.
+Choose a balancing authority. Four charts share one time axis, top to bottom: onshore wind, solar, demand, and net demand. The week, month, and year buttons, the range slider, and a drag-zoom on any chart move all four together. An authority missing from the wind or solar file is drawn as zero.
